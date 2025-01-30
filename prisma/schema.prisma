@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Website User Model
+
+model User {
+  GlobalId          Int     @id @default(autoincrement())
+  Username          String?
+  GlobalName        String?
+  Avatar            String?
+  DiscordiD         String  @unique
+  Theme             String? @default("default")
+  Style             String? @default("uppercase")
+  Description       String?
+  GithubUsername    String?
+  NexusModsUsername String?
+  NexusMods         Json?
+  Github            Json?
+  Roles             Json?
+}
+
+// Custom Commands, called Tags in DB
+
+model Tags {
+  GlobalId   Int     @id @default(autoincrement())
+  TagName    String  @unique
+  TagContent String?
+}
+
+// Moderation Panel Info
+
+model Moderation {
+  GlobalId     Int       @id @default(autoincrement())
+  DiscordId    String
+  Status       String
+  WarningLevel Int
+  WarningCount Int
+  LastWarning  DateTime
+  LastReason   String?
+  Resolved     Boolean
+  Warnings     Warning[]
+}
+
+model Warning {
+  GlobalId           Int         @id @default(autoincrement())
+  IssuedTime         DateTime
+  Reason             String
+  IssuerName         String
+  Moderation         Moderation? @relation(fields: [moderationGlobalId], references: [GlobalId])
+  moderationGlobalId Int?
+}
+
+model Bans {
+  GlobalId    Int     @id @default(autoincrement())
+  DiscordId   String
+  DiscordName String
+  Reason      String?
+  Partial     Boolean
+  GuildId     String
+}
+
+model Kick {
+  GlobalId    Int     @id @default(autoincrement())
+  DiscordId   String
+  DiscordName String
+  Reason      String?
+  Partial     Boolean
+  GuildId     String
+}

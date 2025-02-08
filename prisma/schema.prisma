@@ -79,3 +79,9 @@ model Kick {
   Partial     Boolean
   GuildId     String
 }
+
+model Quotes {
+  GlobalId  Int    @id @default(autoincrement())
+  Quote     String
+  Responder String
+}

@@ -9,8 +9,6 @@ try {
   const DBCheck: { result: number }[] =
     await prisma.$queryRaw`SELECT 1 as result`;
 
-  log(DBCheck[0].result);
-
   if (DBCheck[0].result === 1) {
     log("Database is running");
   }

@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../utils/prisma";
-import { NexusQuery, GithubQuery, log } from "../utils";
+import { NexusQuery, GithubQuery, log, Updater } from "../utils";
 
 export const bot = new Elysia({ prefix: "/bot" })
   .post(
@@ -67,14 +67,56 @@ export const bot = new Elysia({ prefix: "/bot" })
       response: t.String(),
     }),
   })
-  .post("/quotes", async ({ body }) => {}, {
-    body: t.Object({
+  .post(
+    "/quotes",
+    async ({ body }) => {
+      return await prisma.quotes.create({
+        data: {
+          Quote: body.Quote,
+          Responder: body.Responder,
+        },
+      });
+    },
+    {
+      body: t.Object({
+        Quote: t.String(),
+        Responder: t.String(),
+      }),
+    }
+  )
+  .post(
+    "/quotes/request",
+    async ({ body }) => {
+      const Responder = body.Responder;
 
-    }),
-  })
-  .post("/coreversions", async ({ body }) => {}, {
-    body: t.Object({}),
-  })
-  .post("/coreversions", async ({ body }) => {}, {
-    body: t.Object({}),
+      console.log(Responder || "everyone");
+
+      const productsCount = await prisma.quotes.count();
+      const skip = Math.floor(Math.random() * productsCount);
+      return await prisma.quotes.findMany({
+        take: 1,
+        skip: skip,
+        orderBy: {
+          GlobalId: "asc",
+        },
+        where: {
+          OR: [
+            {
+              Responder: Responder,
+            },
+            {
+              Responder: "everyone",
+            },
+          ],
+        },
+      });
+    },
+    {
+      body: t.Object({
+        Responder: t.String(),
+      }),
+    }
+  )
+  .get("/coreversions", async () => {
+    return await Updater();
   });

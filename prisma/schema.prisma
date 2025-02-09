@@ -43,11 +43,11 @@ model Tags {
 
 model Moderation {
   GlobalId     Int       @id @default(autoincrement())
-  DiscordId    String
-  Status       String
-  WarningLevel Int
-  WarningCount Int
-  LastWarning  DateTime
+  DiscordId    String    @unique
+  Status       String?
+  WarningLevel Int?
+  WarningCount Int?
+  LastWarning  DateTime?
   LastReason   String?
   Resolved     Boolean
   Warnings     Warning[]
@@ -55,8 +55,9 @@ model Moderation {
 
 model Warning {
   GlobalId           Int         @id @default(autoincrement())
-  IssuedTime         DateTime
-  Reason             String
+  IssuedTime         DateTime    @default(now())
+  
+  Reason             String?
   IssuerName         String
   Moderation         Moderation? @relation(fields: [moderationGlobalId], references: [GlobalId])
   moderationGlobalId Int?

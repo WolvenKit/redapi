@@ -1,8 +1,8 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { bot, web, auth } from "./api";
+import { bot, web, auth, moderation } from "./api";
 import { prisma, log, errorLog } from "./utils";
-import { jwt } from "@elysiajs/jwt";
+import { cors } from '@elysiajs/cors'
 
 // Check if the Database if Up and running
 try {
@@ -15,6 +15,7 @@ try {
 
   new Elysia()
     .use(swagger())
+    .use(cors())
     .get('/ping', () => {})
     .get("/login", async ({ redirect }) => {
       return redirect("/api/auth/login");
@@ -30,7 +31,7 @@ try {
     .group(
       "/api",
 
-      (app) => app.use(bot).use(web).use(auth)
+      (app) => app.use(bot).use(web).use(auth).use(moderation)
     )
     .listen(3000, () => {
       log("Server is running on port 3000");

@@ -16,11 +16,11 @@
     "@elysiajs/swagger": "^1.2.0",
     "@prisma/client": "^6.2.1",
     "elysia": "latest",
-    "octokit": "^4.1.0"
+    "octokit": "^4.1.0",
+    "prisma": "^6.3.1"
   },
   "devDependencies": {
-    "bun-types": "latest",
-    "prisma": "^6.2.1"
+    "bun-types": "latest"
   },
   "module": "src/index.js"
 }

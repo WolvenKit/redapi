@@ -2,8 +2,13 @@
   "name": "redapi",
   "version": "1.0.50",
   "scripts": {
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "prod": "bunx prisma migrate deploy & bun run src/index.ts"
   },
+  "author": {
+    "name": "Sebastian 'Moonded' Danielzik"
+  },
+  "license": "ISC",
   "dependencies": {
     "@elysiajs/bearer": "^1.2.0",
     "@elysiajs/cors": "^1.2.0",

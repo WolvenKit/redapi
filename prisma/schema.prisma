@@ -44,6 +44,7 @@ model Tags {
 model Moderation {
   GlobalId     Int       @id @default(autoincrement())
   DiscordId    String    @unique
+  JWT          String?   @unique
   Status       String?
   WarningLevel Int?
   WarningCount Int?
@@ -54,9 +55,9 @@ model Moderation {
 }
 
 model Warning {
-  GlobalId           Int         @id @default(autoincrement())
-  IssuedTime         DateTime    @default(now())
-  
+  GlobalId   Int      @id @default(autoincrement())
+  IssuedTime DateTime @default(now())
+
   Reason             String?
   IssuerName         String
   Moderation         Moderation? @relation(fields: [moderationGlobalId], references: [GlobalId])

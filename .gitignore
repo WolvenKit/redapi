@@ -44,3 +44,6 @@ package-lock.json
 .env
 bun.lockb
 bun.lockb
+
+*.crt
+*.key

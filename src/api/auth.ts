@@ -1,17 +1,30 @@
 import { Elysia, t } from "elysia";
-import { prisma } from "../utils/prisma";
-import { log } from "../utils";
+import { log, prisma } from "../utils";
+import jwt from "@elysiajs/jwt";
 
 export const auth = new Elysia({ prefix: "/auth" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET!,
+    })
+  )
   .get("/login", async ({ redirect }) => {
     log("Redirecting to Discord OAuth2");
-    return redirect(
-      "https://discord.com/oauth2/authorize?client_id=796283112199553044&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fredirect&scope=identify+guilds"
-    );
+    const URL = new URLSearchParams({
+      client_id: "796283112199553044",
+      response_type: "code",
+      redirect_uri: `${process.env.HOSTNAME_METHOD}://${process.env.HOSTNAME}${
+        process.env.PORT ? ":" + process.env.PORT : ":" + 8080
+      }/auth/redirect`,
+      scope: "identify guilds email",
+    });
+
+    return redirect(`https://discord.com/oauth2/authorize?${URL.toString()}`);
   })
   .get(
     "/redirect",
-    async ({ query, cookie: { userData, discord }, redirect }) => {
+    async ({ jwt, query, cookie: { userData, discord, auth }, redirect }) => {
       const code = query.code;
 
       const data = await fetch("https://discord.com/api/oauth2/token", {
@@ -24,12 +37,16 @@ export const auth = new Elysia({ prefix: "/auth" })
           client_secret: process.env.DISCORD_SECRET!,
           grant_type: "authorization_code",
           code: code,
-          redirect_uri: "http://localhost:3000/api/auth/redirect",
-          scope: "identify guilds",
+          redirect_uri: `${process.env.HOSTNAME_METHOD}://${
+            process.env.HOSTNAME
+          }${
+            process.env.PORT ? ":" + process.env.PORT : ":" + 8080
+          }/auth/redirect`,
+          scope: "identify guilds user email",
         }),
       });
 
-      const json = await data.json();
+      const json: Token = await data.json();
 
       userData.set({
         value: JSON.stringify(json),
@@ -44,13 +61,36 @@ export const auth = new Elysia({ prefix: "/auth" })
         },
       });
 
-      const userJson = await user.json();
+      const DiscordUser: User = await user.json();
 
-      // save data to browser
+      auth.set({
+        value: await jwt.sign({
+          id: DiscordUser.id,
+          username: DiscordUser.username,
+        }),
+        httpOnly: true,
+        maxAge: 7 * 86400,
+        path: "/",
+      });
+
+      await prisma.moderation.upsert({
+        where: {
+          DiscordId: DiscordUser.id,
+        },
+        update: {
+          DiscordId: DiscordUser.id,
+          JWT: auth.value,
+        },
+        create: {
+          DiscordId: DiscordUser.id,
+          JWT: auth.value,
+          Resolved: true,
+        },
+      });
 
       // save user data to a cookie
       discord.set({
-        value: JSON.stringify(userJson),
+        value: JSON.stringify(DiscordUser),
         path: "/",
         httpOnly: true,
         maxAge: 3600,

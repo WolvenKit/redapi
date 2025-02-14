@@ -1,8 +1,11 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { bot, web, auth, moderation } from "./api";
+import { bot, web, auth, moderation, sign } from "./api";
+import { ping, login, profile, root } from "./pages";
 import { prisma, log, errorLog } from "./utils";
-import { cors } from '@elysiajs/cors'
+import { cors } from "@elysiajs/cors";
+import { join } from "path";
+import { request } from "http";
 
 // Check if the Database if Up and running
 try {
@@ -16,33 +19,38 @@ try {
   new Elysia()
     .use(swagger())
     .use(cors())
-    .get('/ping', () => {})
-    .get("/login", async ({ redirect }) => {
-      return redirect("/api/auth/login");
+    .use(sign)
+    .use(profile)
+    .use(profile)
+    .use(login)
+    .use(ping)
+    .use(bot)
+    .use(web)
+    .use(auth)
+    .use(moderation)
+    .use(root)
+    .listen({
+      port: 3000,
+      hostname: "localhost",
     })
-    .get("/", ({ cookie: { discord, userData } }) => {
-
-      // For testing purposes return the data from the cookies
-
-      const discordData = JSON.parse(discord.value!);
-      const user = JSON.parse(userData.value!);
-      return { discordData, user };
-    })
-    .group(
-      "/api",
-
-      (app) => app.use(bot).use(web).use(auth).use(moderation)
-    )
-    .listen(3000, () => {
-      log("Server is running on port 3000");
-    })
+    // .listen({
+    //   port: 443,
+    //   tls: {
+    //     key: Bun.file(join(import.meta.dir, `./certs/${process.env.SSL_KEY}`)),
+    //     cert: Bun.file(
+    //       join(import.meta.dir, `./certs/${process.env.SSL_CERT}`)
+    //     ),
+    //   },
+    //   hostname: process.env.HOSTNAME,
+    // })
     .onRequest(({ request }) => {
       const { method, url } = request;
       log(`${method} ${url}`);
+    })
+    .onError(({ error }) => {
+      errorLog(error);
+      return "An error occurred";
     });
 } catch (error) {
-  // Kill the API if the Database is not running.
-
-  errorLog("Database is not running");
-  process.exit(1);
+  errorLog(error);
 }

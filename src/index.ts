@@ -1,11 +1,18 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { bot, web, auth, moderation, sign } from "./api";
-import { ping, login, profile, root } from "./pages";
-import { prisma, log, errorLog } from "./utils";
+import { bot, web, auth, moderation } from "api";
+import { ping, login, profile, root } from "pages";
+import {
+  prisma,
+  log,
+  errorLog,
+  rateLimitConfig,
+  swaggerConfig,
+  CORSConfig,
+} from "utils";
 import { cors } from "@elysiajs/cors";
 import { join } from "path";
-import { request } from "http";
+import { rateLimit } from "elysia-rate-limit";
 
 // Check if the Database if Up and running
 try {
@@ -17,9 +24,9 @@ try {
   }
 
   new Elysia()
-    .use(swagger())
-    .use(cors())
-    .use(sign)
+    .use(swagger(swaggerConfig))
+    .use(cors(CORSConfig))
+    .use(rateLimit(rateLimitConfig))
     .use(profile)
     .use(profile)
     .use(login)
@@ -33,16 +40,16 @@ try {
       port: 3000,
       hostname: "localhost",
     })
-    // .listen({
-    //   port: 443,
-    //   tls: {
-    //     key: Bun.file(join(import.meta.dir, `./certs/${process.env.SSL_KEY}`)),
-    //     cert: Bun.file(
-    //       join(import.meta.dir, `./certs/${process.env.SSL_CERT}`)
-    //     ),
-    //   },
-    //   hostname: process.env.HOSTNAME,
-    // })
+    .listen({
+      port: 4443,
+      tls: {
+        key: Bun.file(join(import.meta.dir, `./certs/${process.env.SSL_KEY}`)),
+        cert: Bun.file(
+          join(import.meta.dir, `./certs/${process.env.SSL_CERT}`)
+        ),
+      },
+      hostname: process.env.HOSTNAME,
+    })
     .onRequest(({ request }) => {
       const { method, url } = request;
       log(`${method} ${url}`);

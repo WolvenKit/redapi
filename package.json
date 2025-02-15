@@ -3,8 +3,8 @@
   "version": "1.0.50",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "prod": "bunx prisma migrate deploy & bun run ./src/index.ts",
-    "testprod": "bun run ./src/index.ts"
+    "prod": "bunx prisma migrate deploy & bun --env-file=.env run ./src/index.ts",
+    "testprod": "bun --env-file=.env run ./src/index.ts"
   },
   "author": {
     "name": "Sebastian 'Moonded' Danielzik"

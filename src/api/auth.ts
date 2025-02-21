@@ -7,7 +7,7 @@ export const auth = new Elysia({ prefix: "/auth" })
     jwt({
       name: "jwt",
       secret: process.env.JWT_SECRET!,
-    })
+    }),
   )
   .get("/login", async ({ redirect }) => {
     log("Redirecting to Discord OAuth2");
@@ -51,7 +51,7 @@ export const auth = new Elysia({ prefix: "/auth" })
       userData.set({
         value: JSON.stringify(json),
         path: "/",
-        httpOnly: true,
+        httpOnly: false,
         maxAge: 3600,
       });
 
@@ -68,7 +68,7 @@ export const auth = new Elysia({ prefix: "/auth" })
           id: DiscordUser.id,
           username: DiscordUser.username,
         }),
-        httpOnly: true,
+        httpOnly: false,
         maxAge: 7 * 86400,
         path: "/",
       });
@@ -92,15 +92,15 @@ export const auth = new Elysia({ prefix: "/auth" })
       discord.set({
         value: JSON.stringify(DiscordUser),
         path: "/",
-        httpOnly: true,
+        httpOnly: false,
         maxAge: 3600,
       });
 
-      return redirect("/");
+      return redirect(process.env.REDIRECT as string);
     },
     {
       query: t.Object({
         code: t.String(),
       }),
-    }
+    },
   );

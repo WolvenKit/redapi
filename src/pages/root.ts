@@ -1,3 +1,3 @@
-import { Elysia } from "elysia";
+import { Elysia, redirect } from "elysia";
 
-export const root = new Elysia().get("/", () => "Hello, World!");
+export const root = new Elysia().get("/", () => {});

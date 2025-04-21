@@ -2,14 +2,12 @@ import { Elysia, t } from "elysia";
 import { prisma } from "../utils/prisma";
 import { NexusQuery, GithubQuery, log, Updater } from "../utils";
 import bearer from "@elysiajs/bearer";
+import { ValidateAuth } from "src/middleware/auth";
 
 export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
   {
-    beforeHandle({ set, bearer }) {
-      if (bearer !== process.env.BOT_TOKEN) {
-        set.status = 401;
-        return "Unauthorized";
-      }
+    beforeHandle({ set, bearer, error, path }) {
+      return ValidateAuth(set, bearer, error, path, "bot");
     },
   },
   (app) =>

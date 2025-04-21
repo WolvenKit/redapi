@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { prisma } from "../utils/prisma";
 import { log } from "../utils";
 import { bearer } from "@elysiajs/bearer";
+import { ValidateAuth } from "src/middleware/auth";
 
 function calculateWarningLevel(warningCount: number): number {
   return Math.min(100, 10 * Math.pow(1.5, warningCount));
@@ -11,11 +12,8 @@ export const moderation = new Elysia({ prefix: "/moderation" })
   .use(bearer())
   .guard(
     {
-      beforeHandle({ set, bearer }) {
-        if (bearer !== process.env.BOT_TOKEN) {
-          set.status = 401;
-          return "Unauthorized";
-        }
+      beforeHandle({ set, bearer, error, path }) {
+        return ValidateAuth(set, bearer, error, path, "moderation");
       },
     },
     (app) =>
@@ -170,7 +168,6 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               include: { Warnings: true }, // Fetch related warnings
             });
 
-            console.log(moderation);
 
             // Count previous warnings
             const previousWarnings = moderation?.WarningCount ?? 0;
@@ -179,7 +176,6 @@ export const moderation = new Elysia({ prefix: "/moderation" })
             // Calculate new warning level
             const newWarningLevel = calculateWarningLevel(updatedWarnings);
 
-            console.log(newWarningLevel);
 
             await prisma.moderation.upsert({
               where: {
@@ -268,6 +264,80 @@ export const moderation = new Elysia({ prefix: "/moderation" })
           {
             body: t.Object({
               DiscordId: t.String(),
+            }),
+          }
+        )
+        .post(
+          "/message",
+          async ({ body }) => {
+
+            const messageCompare = await prisma.messageComparison.upsert({
+              where: {
+                UserId: body.UserId,
+              },
+              update: {
+                UserId: body.UserId,
+                LastMessageHash: (
+                  await prisma.messageComparison.findFirst({
+                    where: {
+                      UserId: body.UserId,
+                    },
+                    select: {
+                      CurrentMessageHash: true,
+                    },
+                  })
+                )?.CurrentMessageHash,
+                CurrentMessageHash: body.Content,
+                TimestampLastMessage: (
+                  await prisma.messageComparison.findFirst({
+                    where: {
+                      UserId: body.UserId,
+                    },
+                    select: {
+                      TimestampCurrentMessage: true,
+                    },
+                  })
+                )?.TimestampCurrentMessage,
+                TimestampCurrentMessage: new Date().toISOString(),
+              },
+              create: {
+                UserId: body.UserId,
+                CurrentMessageHash: body.Content,
+                TimestampCurrentMessage: new Date().toISOString(),
+              },
+            });
+
+            const message = await prisma.messageComparison.findUnique({
+              where: {
+                UserId: body.UserId,
+              },
+            });
+
+            const lastMessageHash = message?.LastMessageHash;
+            const currentMessageHash = message?.CurrentMessageHash;
+            const timestampLastMessage = message?.TimestampLastMessage;
+            const timestampCurrentMessage = message?.TimestampCurrentMessage;
+
+            const TimeRangeInMinutes = 5;
+            const isSameMessage = lastMessageHash === currentMessageHash;
+
+            const isTimeRange =
+              Math.abs(
+                new Date(timestampCurrentMessage ?? 0).getTime() -
+                  new Date(timestampLastMessage ?? 0).getTime()
+              ) <
+              TimeRangeInMinutes * 60 * 1000;
+
+            if (isSameMessage) {
+              return true;
+            }
+            return false;
+          },
+          {
+            body: t.Object({
+              Timestamp: t.String(),
+              Content: t.String(),
+              UserId: t.String(),
             }),
           }
         )

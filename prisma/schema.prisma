@@ -87,3 +87,19 @@ model Quotes {
   Quote     String
   Responder String
 }
+
+model MessageComparison {
+  GlobalId                Int       @id @default(autoincrement())
+  LastMessageHash         String?
+  CurrentMessageHash      String?
+  UserId                  String    @unique
+  TimestampLastMessage    DateTime?
+  TimestampCurrentMessage DateTime?
+}
+
+model Auth {
+  GlobalId  Int     @id @default(autoincrement())
+  DiscordId String? @unique
+  JWT       String? @unique
+  Endpoints Json?
+}

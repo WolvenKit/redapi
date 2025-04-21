@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { log, prisma } from "../utils";
 import jwt from "@elysiajs/jwt";
+import { defaultPermission, AdminPermission } from "../utils";
 
 export const auth = new Elysia({ prefix: "/auth" })
   .use(
@@ -63,6 +64,39 @@ export const auth = new Elysia({ prefix: "/auth" })
 
       const DiscordUser: User = await user.json();
 
+      if (DiscordUser.id === (process.env.ADMIN_ID as string)) {
+        await prisma.auth.upsert({
+          where: {
+            DiscordId: DiscordUser.id,
+          },
+          update: {},
+          create: {
+            DiscordId: DiscordUser.id,
+            JWT: await jwt.sign({
+              id: DiscordUser.id,
+              username: DiscordUser.username,
+              discriminator: DiscordUser.discriminator,
+            }),
+            Endpoints: AdminPermission,
+          },
+        });
+      } else {
+        await prisma.auth.upsert({
+          where: {
+            DiscordId: DiscordUser.id,
+          },
+          update: {},
+          create: {
+            DiscordId: DiscordUser.id,
+            JWT: await jwt.sign({
+              id: DiscordUser.id,
+              username: DiscordUser.username,
+              discriminator: DiscordUser.discriminator,
+            }),
+            Endpoints: defaultPermission,
+          },
+        });
+      }
       auth.set({
         value: await jwt.sign({
           id: DiscordUser.id,
@@ -70,7 +104,7 @@ export const auth = new Elysia({ prefix: "/auth" })
         }),
         httpOnly: false,
         maxAge: 7 * 86400,
-        path: "/",
+        path: process.env.INTERFACE_URL as string,
       });
 
       await prisma.moderation.upsert({

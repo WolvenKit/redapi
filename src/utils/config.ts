@@ -13,5 +13,5 @@ export const rateLimitConfig = {
 };
 
 export const CORSConfig = {
-  origin: /.*\.saltyaom\.com$/,
+  origin: /.*redmodding\.org$/,
 };

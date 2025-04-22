@@ -36,12 +36,20 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
         username: DiscordUser.username,
       });
 
+      auth.set({
+        value: JWT,
+        maxAge: Token.expires_in,
+        path: "/",
+      });
+
       await prisma.$transaction([
         prisma.auth.upsert({
           where: {
             DiscordId: DiscordUser.id,
           },
-          update: {},
+          update: {
+            JWT: JWT,
+          },
           create: {
             DiscordId: DiscordUser.id,
             JWT: JWT,
@@ -67,16 +75,10 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
         }),
       ]);
 
-      auth.set({
-        value: JWT,
-        maxAge: Token.expires_in,
-        path: "/",
-      });
-
       discord.set({
         value: JSON.stringify(DiscordUser),
         path: "/",
-        maxAge: 3600,
+        maxAge: Token.expires_in,
       });
 
       return redirect(process.env.REDIRECT!);
@@ -84,10 +86,6 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
     {
       query: t.Object({
         code: t.String(),
-      }),
-      cookie: t.Cookie({
-        discord: t.String(),
-        auth: t.String(),
       }),
     }
   )

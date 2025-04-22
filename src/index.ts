@@ -1,7 +1,7 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
 import { bot, web, auth, moderation } from "api";
-import { ping, login, root } from "pages";
+import { ping, root } from "pages";
 import {
   prisma,
   log,
@@ -27,7 +27,6 @@ try {
     .use(swagger(swaggerConfig))
     .use(cors(CORSConfig))
     .use(rateLimit(rateLimitConfig))
-    .use(login)
     .use(ping)
     .use(bot)
     .use(web)

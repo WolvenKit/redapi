@@ -93,12 +93,10 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           }),
         }
       )
-      .post(
+      .get(
         "/quotes/request",
-        async ({ body }) => {
-          const Responder = body.Responder;
-
-          console.log(Responder || "everyone");
+        async ({ query }) => {
+          const User = query.user;
 
           const productsCount = await prisma.quotes.count();
           const skip = Math.floor(Math.random() * productsCount);
@@ -111,7 +109,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
             where: {
               OR: [
                 {
-                  Responder: Responder,
+                  Responder: User,
                 },
                 {
                   Responder: "everyone",
@@ -121,12 +119,29 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           });
         },
         {
-          body: t.Object({
-            Responder: t.String(),
+          query: t.Object({
+            user: t.String(),
           }),
         }
       )
       .get("/coreversions", async () => {
         return await Updater();
       })
+      .get(
+        "/quotes",
+        async ({ query }) => {
+          const quote =  await prisma.quotes.findUnique({
+            where: {
+              GlobalId: query.quoteId,
+            },
+          });
+
+          return quote
+        },
+        {
+          query: t.Object({
+            quoteId: t.Number(),
+          }),
+        }
+      )
 );

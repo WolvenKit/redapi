@@ -13,11 +13,12 @@ export const web = new Elysia({ prefix: "/web" })
   .get(
     "/user/:userId",
     async ({ params }) => {
-      return await prisma.user.findUnique({
+      const User = await prisma.user.findUnique({
         where: {
           GlobalId: Number(params.userId),
         },
       });
+      return User;
     },
     {
       params: t.Object({
@@ -61,9 +62,9 @@ export const web = new Elysia({ prefix: "/web" })
   )
   .get(
     "/moderation/:userId",
-    async ({ params, cookie: { auth }, error, redirect }) => {
+    async ({ params, cookie: { auth }, error }) => {
       if (!auth.value) {
-        redirect("/sign");
+        return error(401);
       }
 
       const user = await prisma.moderation.findUnique({
@@ -84,8 +85,6 @@ export const web = new Elysia({ prefix: "/web" })
         userId: t.String(),
       }),
       cookie: t.Object({
-        userData: t.String(),
-        discord: t.String(),
         auth: t.String(),
       }),
     }

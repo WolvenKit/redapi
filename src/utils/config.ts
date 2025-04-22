@@ -13,5 +13,5 @@ export const rateLimitConfig = {
 };
 
 export const CORSConfig = {
-  origin: /.*redmodding\.org$/,
+  origin: process.env.CORS_ORIGIN!,
 };

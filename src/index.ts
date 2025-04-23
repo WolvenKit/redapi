@@ -1,7 +1,7 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
 import { bot, web, auth, moderation } from "api";
-import { ping, root } from "pages";
+import { ping, root, profile } from "pages";
 import {
   prisma,
   log,
@@ -27,6 +27,7 @@ try {
     .use(swagger(swaggerConfig))
     .use(cors(CORSConfig))
     .use(rateLimit(rateLimitConfig))
+    // .use(profile)
     .use(ping)
     .use(bot)
     .use(web)
@@ -42,9 +43,13 @@ try {
       tls: {
         key: Bun.file(join(import.meta.dir, `./certs/${process.env.SSL_KEY}`)),
         cert: Bun.file(
-          join(import.meta.dir, `./certs/${process.env.SSL_CERT}`),
+          join(import.meta.dir, `./certs/${process.env.SSL_CERT}`)
         ),
       },
+      hostname: process.env.HOSTNAME,
+    })
+    .listen({
+      port: 8080,
       hostname: process.env.HOSTNAME,
     })
     .onRequest(({ request }) => {

@@ -1,6 +1,6 @@
-import { Elysia, t } from "elysia";
+import { Elysia, error, t } from "elysia";
 import { prisma } from "../utils/prisma";
-import { log } from "../utils";
+import { errorLog } from "../utils";
 import { bearer } from "@elysiajs/bearer";
 import { ValidateAuth } from "src/middleware/auth";
 
@@ -20,55 +20,58 @@ export const moderation = new Elysia({ prefix: "/moderation" })
       app
         .post(
           "/ban",
-          async ({ body }) => {
-            const moderation = await prisma.moderation.findUnique({
-              where: { DiscordId: body.DiscordId },
-              include: { Warnings: true }, // Fetch related warnings
-            });
+          async ({ body, error }) => {
+            try {
+              const moderation = await prisma.moderation.findUnique({
+                where: { DiscordId: body.DiscordId },
+                include: { Warnings: true }, // Fetch related warnings
+              });
 
-            // Count previous warnings
-            const previousWarnings = moderation?.WarningCount ?? 0;
-            const updatedWarnings = previousWarnings + 1;
+              // Count previous warnings
+              const previousWarnings = moderation?.WarningCount ?? 0;
+              const updatedWarnings = previousWarnings + 1;
 
-            // Calculate new warning level
-            const newWarningLevel = calculateWarningLevel(updatedWarnings);
+              // Calculate new warning level
+              const newWarningLevel = calculateWarningLevel(updatedWarnings);
 
-            const bans = await prisma.bans.create({
-              data: {
-                DiscordId: body.DiscordId,
-                DiscordName: body.User,
-                Reason: body.Reason,
-                Partial: newWarningLevel > 75.94 ? false : true,
-                GuildId: body.GuildId,
-              },
-            });
-
-            const newmoderation = await prisma.moderation.upsert({
-              where: {
-                DiscordId: body.DiscordId,
-              },
-              update: {
-                DiscordId: body.DiscordId,
-                WarningCount: {
-                  increment: 1,
+              const bans = await prisma.bans.create({
+                data: {
+                  DiscordId: body.DiscordId,
+                  DiscordName: body.User,
+                  Reason: body.Reason,
+                  Partial: newWarningLevel > 75.94 ? false : true,
+                  GuildId: body.GuildId,
                 },
-                WarningLevel: newWarningLevel,
-                Status: body.Type,
-                LastReason: body.Reason,
-              },
-              create: {
-                DiscordId: body.DiscordId,
-                Status: body.Type,
-                LastReason: body.Reason,
-                Resolved: false,
-                WarningCount: 1,
-                WarningLevel: newWarningLevel,
-              },
-            });
+              });
 
-            log(newmoderation, bans);
+              const newmoderation = await prisma.moderation.upsert({
+                where: {
+                  DiscordId: body.DiscordId,
+                },
+                update: {
+                  DiscordId: body.DiscordId,
+                  WarningCount: {
+                    increment: 1,
+                  },
+                  WarningLevel: newWarningLevel,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                },
+                create: {
+                  DiscordId: body.DiscordId,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                  Resolved: false,
+                  WarningCount: 1,
+                  WarningLevel: newWarningLevel,
+                },
+              });
 
-            return [body, newWarningLevel];
+              return [body, newWarningLevel];
+            } catch (e) {
+              errorLog(e);
+              return error(500);
+            }
           },
           {
             body: t.Object({
@@ -83,62 +86,65 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/warn",
-          async ({ body }) => {
-            const moderation = await prisma.moderation.findUnique({
-              where: { DiscordId: body.DiscordId },
-              include: { Warnings: true }, // Fetch related warnings
-            });
+          async ({ body, error }) => {
+            try {
+              const moderation = await prisma.moderation.findUnique({
+                where: { DiscordId: body.DiscordId },
+                include: { Warnings: true }, // Fetch related warnings
+              });
 
-            // Count previous warnings
-            const previousWarnings = moderation?.WarningCount ?? 0;
-            const updatedWarnings = previousWarnings + 1;
+              // Count previous warnings
+              const previousWarnings = moderation?.WarningCount ?? 0;
+              const updatedWarnings = previousWarnings + 1;
 
-            // Calculate new warning level
-            const newWarningLevel = calculateWarningLevel(updatedWarnings);
+              // Calculate new warning level
+              const newWarningLevel = calculateWarningLevel(updatedWarnings);
 
-            const newModeration = await prisma.moderation.upsert({
-              where: {
-                DiscordId: body.DiscordId,
-              },
-              update: {
-                DiscordId: body.DiscordId,
-                Status: body.Type,
-                LastReason: body.Reason,
-                LastWarning: new Date().toISOString(),
-                Resolved: false,
-                WarningCount: {
-                  increment: 1,
+              const newModeration = await prisma.moderation.upsert({
+                where: {
+                  DiscordId: body.DiscordId,
                 },
-                WarningLevel: newWarningLevel,
-                Warnings: {
-                  create: {
-                    Reason: body.Reason,
-                    IssuedTime: new Date(),
-                    IssuerName: body.Issuer,
+                update: {
+                  DiscordId: body.DiscordId,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                  LastWarning: new Date().toISOString(),
+                  Resolved: false,
+                  WarningCount: {
+                    increment: 1,
+                  },
+                  WarningLevel: newWarningLevel,
+                  Warnings: {
+                    create: {
+                      Reason: body.Reason,
+                      IssuedTime: new Date(),
+                      IssuerName: body.Issuer,
+                    },
                   },
                 },
-              },
-              create: {
-                DiscordId: body.DiscordId,
-                Status: body.Type,
-                LastReason: body.Reason,
-                LastWarning: new Date().toISOString(),
-                Resolved: false,
-                WarningCount: 1,
-                WarningLevel: newWarningLevel,
-                Warnings: {
-                  create: {
-                    Reason: body.Reason,
-                    IssuedTime: new Date(),
-                    IssuerName: body.Issuer,
+                create: {
+                  DiscordId: body.DiscordId,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                  LastWarning: new Date().toISOString(),
+                  Resolved: false,
+                  WarningCount: 1,
+                  WarningLevel: newWarningLevel,
+                  Warnings: {
+                    create: {
+                      Reason: body.Reason,
+                      IssuedTime: new Date(),
+                      IssuerName: body.Issuer,
+                    },
                   },
                 },
-              },
-            });
+              });
 
-            log(newModeration);
-
-            return [body, newWarningLevel];
+              return [body, newWarningLevel];
+            } catch (e) {
+              errorLog(e);
+              return error(500);
+            }
           },
           {
             body: t.Object({
@@ -152,58 +158,61 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/kick",
-          async ({ body }) => {
-            await prisma.kick.create({
-              data: {
-                DiscordId: body.DiscordId,
-                DiscordName: body.User,
-                Reason: body.Reason,
-                Partial: true,
-                GuildId: body.GuildId,
-              },
-            });
-
-            const moderation = await prisma.moderation.findUnique({
-              where: { DiscordId: body.DiscordId },
-              include: { Warnings: true }, // Fetch related warnings
-            });
-
-
-            // Count previous warnings
-            const previousWarnings = moderation?.WarningCount ?? 0;
-            const updatedWarnings = previousWarnings + 1;
-
-            // Calculate new warning level
-            const newWarningLevel = calculateWarningLevel(updatedWarnings);
-
-
-            await prisma.moderation.upsert({
-              where: {
-                DiscordId: body.DiscordId,
-              },
-              update: {
-                DiscordId: body.DiscordId,
-                WarningCount: {
-                  increment: 1,
+          async ({ body, error }) => {
+            try {
+              await prisma.kick.create({
+                data: {
+                  DiscordId: body.DiscordId,
+                  DiscordName: body.User,
+                  Reason: body.Reason,
+                  Partial: true,
+                  GuildId: body.GuildId,
                 },
-                WarningLevel: newWarningLevel,
-                Status: body.Type,
-                LastReason: body.Reason,
-                LastWarning: new Date(),
-                Resolved: false,
-              },
-              create: {
-                DiscordId: body.DiscordId,
-                Status: body.Type,
-                LastReason: body.Reason,
-                Resolved: false,
-                WarningCount: 1,
-                WarningLevel: newWarningLevel,
-                LastWarning: new Date(),
-              },
-            });
+              });
 
-            return [body, newWarningLevel];
+              const moderation = await prisma.moderation.findUnique({
+                where: { DiscordId: body.DiscordId },
+                include: { Warnings: true }, // Fetch related warnings
+              });
+
+              // Count previous warnings
+              const previousWarnings = moderation?.WarningCount ?? 0;
+              const updatedWarnings = previousWarnings + 1;
+
+              // Calculate new warning level
+              const newWarningLevel = calculateWarningLevel(updatedWarnings);
+
+              await prisma.moderation.upsert({
+                where: {
+                  DiscordId: body.DiscordId,
+                },
+                update: {
+                  DiscordId: body.DiscordId,
+                  WarningCount: {
+                    increment: 1,
+                  },
+                  WarningLevel: newWarningLevel,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                  LastWarning: new Date(),
+                  Resolved: false,
+                },
+                create: {
+                  DiscordId: body.DiscordId,
+                  Status: body.Type,
+                  LastReason: body.Reason,
+                  Resolved: false,
+                  WarningCount: 1,
+                  WarningLevel: newWarningLevel,
+                  LastWarning: new Date(),
+                },
+              });
+
+              return [body, newWarningLevel];
+            } catch (e) {
+              errorLog(e);
+              return error(500);
+            }
           },
           {
             body: t.Object({
@@ -218,48 +227,53 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/drop",
-          async ({ body }) => {
-            // Drop all Moderation data for a user
+          async ({ body, error }) => {
+            try {
+              // Drop all Moderation data for a user
 
-            const moderation = await prisma.moderation
-              .deleteMany({
-                where: {
-                  DiscordId: body.DiscordId,
-                },
-              })
-              .catch((error) => {
-                return error;
-              });
+              const moderation = await prisma.moderation
+                .deleteMany({
+                  where: {
+                    DiscordId: body.DiscordId,
+                  },
+                })
+                .catch((error) => {
+                  return error;
+                });
 
-            // Drop all Kicks for a user
+              // Drop all Kicks for a user
 
-            const kicks = await prisma.kick
-              .deleteMany({
-                where: {
-                  DiscordId: body.DiscordId,
-                },
-              })
-              .catch((error) => {
-                return error;
-              });
+              const kicks = await prisma.kick
+                .deleteMany({
+                  where: {
+                    DiscordId: body.DiscordId,
+                  },
+                })
+                .catch((error) => {
+                  return error;
+                });
 
-            // Drop all Bans for a user
+              // Drop all Bans for a user
 
-            const bans = await prisma.bans
-              .deleteMany({
-                where: {
-                  DiscordId: body.DiscordId,
-                },
-              })
-              .catch((error) => {
-                return error;
-              });
+              const bans = await prisma.bans
+                .deleteMany({
+                  where: {
+                    DiscordId: body.DiscordId,
+                  },
+                })
+                .catch((error) => {
+                  return error;
+                });
 
-            if (!moderation || !kicks || !bans) {
-              return body;
+              if (!moderation || !kicks || !bans) {
+                return body;
+              }
+
+              return [body, moderation, kicks, bans];
+            } catch (e) {
+              errorLog(e);
+              return error(500);
             }
-
-            return [body, moderation, kicks, bans];
           },
           {
             body: t.Object({
@@ -269,69 +283,73 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/message",
-          async ({ body }) => {
+          async ({ body, error }) => {
+            try {
+              const messageCompare = await prisma.messageComparison.upsert({
+                where: {
+                  UserId: body.UserId,
+                },
+                update: {
+                  UserId: body.UserId,
+                  LastMessageHash: (
+                    await prisma.messageComparison.findFirst({
+                      where: {
+                        UserId: body.UserId,
+                      },
+                      select: {
+                        CurrentMessageHash: true,
+                      },
+                    })
+                  )?.CurrentMessageHash,
+                  CurrentMessageHash: body.Content,
+                  TimestampLastMessage: (
+                    await prisma.messageComparison.findFirst({
+                      where: {
+                        UserId: body.UserId,
+                      },
+                      select: {
+                        TimestampCurrentMessage: true,
+                      },
+                    })
+                  )?.TimestampCurrentMessage,
+                  TimestampCurrentMessage: new Date().toISOString(),
+                },
+                create: {
+                  UserId: body.UserId,
+                  CurrentMessageHash: body.Content,
+                  TimestampCurrentMessage: new Date().toISOString(),
+                },
+              });
 
-            const messageCompare = await prisma.messageComparison.upsert({
-              where: {
-                UserId: body.UserId,
-              },
-              update: {
-                UserId: body.UserId,
-                LastMessageHash: (
-                  await prisma.messageComparison.findFirst({
-                    where: {
-                      UserId: body.UserId,
-                    },
-                    select: {
-                      CurrentMessageHash: true,
-                    },
-                  })
-                )?.CurrentMessageHash,
-                CurrentMessageHash: body.Content,
-                TimestampLastMessage: (
-                  await prisma.messageComparison.findFirst({
-                    where: {
-                      UserId: body.UserId,
-                    },
-                    select: {
-                      TimestampCurrentMessage: true,
-                    },
-                  })
-                )?.TimestampCurrentMessage,
-                TimestampCurrentMessage: new Date().toISOString(),
-              },
-              create: {
-                UserId: body.UserId,
-                CurrentMessageHash: body.Content,
-                TimestampCurrentMessage: new Date().toISOString(),
-              },
-            });
+              const message = await prisma.messageComparison.findUnique({
+                where: {
+                  UserId: body.UserId,
+                },
+              });
 
-            const message = await prisma.messageComparison.findUnique({
-              where: {
-                UserId: body.UserId,
-              },
-            });
+              const lastMessageHash = message?.LastMessageHash;
+              const currentMessageHash = message?.CurrentMessageHash;
+              const timestampLastMessage = message?.TimestampLastMessage;
+              const timestampCurrentMessage = message?.TimestampCurrentMessage;
 
-            const lastMessageHash = message?.LastMessageHash;
-            const currentMessageHash = message?.CurrentMessageHash;
-            const timestampLastMessage = message?.TimestampLastMessage;
-            const timestampCurrentMessage = message?.TimestampCurrentMessage;
+              const TimeRangeInMinutes = 5;
+              const isSameMessage = lastMessageHash === currentMessageHash;
 
-            const TimeRangeInMinutes = 5;
-            const isSameMessage = lastMessageHash === currentMessageHash;
+              const isTimeRange =
+                Math.abs(
+                  new Date(timestampCurrentMessage ?? 0).getTime() -
+                    new Date(timestampLastMessage ?? 0).getTime()
+                ) <
+                TimeRangeInMinutes * 60 * 1000;
 
-            const isTimeRange =
-              Math.abs(
-                new Date(timestampCurrentMessage ?? 0).getTime() -
-                  new Date(timestampLastMessage ?? 0).getTime()
-              ) <
-              TimeRangeInMinutes * 60 * 1000;
-
-            if (isSameMessage) {
-              return true;
+              if (isSameMessage && isTimeRange) {
+                return true;
+              }
+              return false;
+            } catch (e) {
+              errorLog(e);
+              return error(500);
             }
-            return false;
           },
           {
             body: t.Object({

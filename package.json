@@ -17,6 +17,7 @@
     "@elysiajs/jwt": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "@prisma/client": "^6.6.0",
+    "discord.js": "^14.19.3",
     "elysia": "latest",
     "elysia-rate-limit": "^4.3.0",
     "octokit": "^4.1.3",

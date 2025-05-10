@@ -40,4 +40,12 @@ export const AdminPermission = {
       userId: ["GET"],
     },
   },
+  admin: {
+    update: {
+      users: ["GET"],
+    },
+    import: {
+      users: ["POST"],
+    }
+  }
 };

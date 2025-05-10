@@ -50,6 +50,10 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
             },
             update: {
               JWT: JWT,
+              Endpoints:
+                DiscordUser.id === process.env.ADMIN_ID!
+                  ? AdminPermission
+                  : defaultPermission,
             },
             create: {
               DiscordId: DiscordUser.id,

@@ -6,7 +6,6 @@ export const web = new Elysia({ prefix: "/web" })
   .get("/", async ({ error }) => {
     try {
       return await prisma.user.findMany({
-        take: 10,
         orderBy: {
           GlobalId: "desc",
         },

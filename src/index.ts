@@ -1,6 +1,6 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { bot, web, auth, moderation } from "api";
+import { bot, web, auth, moderation, admin } from "api";
 import { ping, root, profile } from "pages";
 import {
   prisma,
@@ -28,6 +28,7 @@ try {
     .use(cors(CORSConfig))
     .use(rateLimit(rateLimitConfig))
     // .use(profile)
+    .use(admin)
     .use(ping)
     .use(bot)
     .use(web)

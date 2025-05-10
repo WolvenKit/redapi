@@ -176,8 +176,8 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                 DiscordiD: body.DiscordiD,
               },
               update: {
-                Username: body.Username,
-                GlobalName: body.GlobalName,
+                Username: DiscordUser.user.username,
+                GlobalName: DiscordUser.user.globalName,
                 Theme: body.Theme,
                 Style: body.Style,
                 Description: body.Description,
@@ -188,8 +188,8 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                 Roles: Roles,
               },
               create: {
-                Username: body.Username,
-                GlobalName: body.GlobalName,
+                Username: DiscordUser.user.username,
+                GlobalName: DiscordUser.user.globalName,
                 Theme: body.Theme,
                 Style: body.Style,
                 Description: body.Description,

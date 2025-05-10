@@ -95,7 +95,7 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                   Username: DiscordUser.user.username,
                   GlobalName: DiscordUser.user.globalName,
                   Avatar: DiscordUser.avatar,
-                  Roles: JSON.stringify(Roles),
+                  Roles: Roles,
                 },
               });
             }
@@ -150,6 +150,27 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
             const Github: any =
               (await GithubQuery(body.GithubUsername)) ?? undefined;
 
+            const DiscordUser = (await DClient.guilds.cache
+                  .find((guild) => {
+                    return guild.id === process.env.GUILD_ID;
+                  })
+                  ?.members.fetch(body.DiscordiD)) as GuildMember;
+
+              const Roles = DiscordUser
+                ? (
+                    DiscordUser.roles as GuildMemberRoleManager
+                  ).cache.map((role) => {
+                    return {
+                      id: role.id,
+                      name: role.name,
+                      position: role.position,
+                      rawPosition: role.rawPosition,
+                      icon: role.icon,
+                      iconUrl: role.iconURL(),
+                    };
+                  })
+                : [];
+
             return await prisma.user.upsert({
               where: {
                 DiscordiD: body.DiscordiD,
@@ -164,7 +185,7 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                 NexusModsUsername: body.NexusModsUsername,
                 NexusMods: NexusMods,
                 Github: Github,
-                Roles: body.Roles ?? [],
+                Roles: Roles,
               },
               create: {
                 Username: body.Username,
@@ -177,7 +198,7 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                 NexusModsUsername: body.NexusModsUsername,
                 NexusMods: NexusMods,
                 Github: Github,
-                Roles: body.Roles ?? [],
+                Roles: Roles,
               },
             });
           } catch (e) {

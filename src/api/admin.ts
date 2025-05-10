@@ -66,13 +66,15 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
               user.Avatar === null ||
               user.Roles === null
             ) {
-              const DiscordUser = (await DClient.users.fetch(
-                user.DiscordiD
-              )) as any;
+              const DiscordUser = (await DClient.guilds.cache
+                  .find((guild) => {
+                    return guild.id === process.env.GUILD_ID;
+                  })
+                  ?.members.fetch(user.DiscordiD)) as GuildMember;
 
-              const Roles = DiscordUser.member
+              const Roles = DiscordUser
                 ? (
-                    DiscordUser.member.roles as GuildMemberRoleManager
+                    DiscordUser.roles as GuildMemberRoleManager
                   ).cache.map((role) => {
                     return {
                       id: role.id,
@@ -90,8 +92,8 @@ export const admin = new Elysia({ prefix: "/admin" }).use(bearer()).guard(
                   DiscordiD: user.DiscordiD,
                 },
                 data: {
-                  Username: DiscordUser.username,
-                  GlobalName: DiscordUser.globalname,
+                  Username: DiscordUser.user.username,
+                  GlobalName: DiscordUser.user.globalName,
                   Avatar: DiscordUser.avatar,
                   Roles: JSON.stringify(Roles),
                 },

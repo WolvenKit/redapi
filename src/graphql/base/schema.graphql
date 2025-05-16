@@ -1,0 +1,65 @@
+type User {
+  GlobalId: ID!
+  Username: String!
+  GlobalName: String!
+  Avatar: String
+  DiscordiD: String!
+  Theme: String
+  Style: String
+  Descryption: String
+  GithubUsername: String
+  NexusModsUsername: String
+  NexusMods: [NexusMods]
+  Github: [Github]
+  Roles: [Roles]
+}
+
+type Github {
+  Name: String!
+  Issues: Int!
+  Commits: Int!
+}
+
+type Roles {
+  icon: String
+  name: String!
+  iconUrl: String
+  position: Int!
+  rawPosition: Int!
+}
+
+type NexusModsMods {
+  Game: String!
+  Name: String!
+  ModId: Int!
+  Status: String!
+  Summary: String!
+  Version: String!
+  Downloads: Int!
+  PictureUrl: String!
+  ModCategory: String!
+  AdultContent: Boolean!
+  Endorsements: Int!
+}
+
+type NexusModsUser {
+  Name: String!
+  About: String!
+  Kudos: Int!
+  Posts: Int!
+  Avatar: String!
+  Country: String!
+  MemberId: Int!
+  ModCount: Int!
+  UniqueModDownloads: Int!
+}
+
+type NexusMods {
+  Mods: [NexusModsMods!]
+  User: NexusModsUser
+}
+
+type Query {
+  info: String
+  User(page: Int): [User!]!
+}

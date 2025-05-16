@@ -147,7 +147,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           }),
         }
       )
-      .get("/coreversions", async ({ error}) => {
+      .get("/coreversions", async ({ error }) => {
         try {
           return await Updater();
         } catch (e) {
@@ -155,13 +155,17 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           return error(500);
         }
       })
-      .get(
-        "/quotes",
-        async ({ query, error }) => {
+      .patch(
+        "/quotes/:quoteId",
+        async ({ query, body, error }) => {
           try {
-            const quote = await prisma.quotes.findUnique({
+            const quote = await prisma.quotes.update({
               where: {
                 GlobalId: query.quoteId,
+              },
+              data: {
+                Quote: body.Quote,
+                Responder: body.Responder,
               },
             });
 
@@ -174,6 +178,10 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
         {
           query: t.Object({
             quoteId: t.Number(),
+          }),
+          body: t.Object({
+            Quote: t.String(),
+            Responder: t.String(),
           }),
         }
       )

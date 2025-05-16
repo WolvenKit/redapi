@@ -9,7 +9,7 @@ export const swaggerConfig = {
 
 export const rateLimitConfig = {
   duration: 60,
-  max: 100,
+  max: 110,
 };
 
 export const CORSConfig = {

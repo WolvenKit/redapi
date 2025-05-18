@@ -102,4 +102,77 @@ model Auth {
   DiscordId String? @unique
   JWT       String? @unique
   Endpoints Json?
+  Roles     Json?
+}
+
+model Settings {
+  Id                       Int     @id @default(autoincrement())
+  GuildId                  String? @unique
+  RestrictedQuotesChannels Json?
+  MarkedMembersChannel     String?
+  ModerationCategory       String?
+  ModerationLog            String?
+  MarkedMembersRole        String?
+
+  InteractionSettings   InteractionSettings? @relation(fields: [interactionSettingsId], references: [Id])
+  interactionSettingsId Int?
+
+  EventSettings   EventSettings? @relation(fields: [eventSettingsId], references: [Id])
+  eventSettingsId Int?
+}
+
+model InteractionSettings {
+  Id        Int     @id @default(autoincrement())
+  Avatar    Boolean @default(false)
+  Clean     Boolean @default(false)
+  Clear     Boolean @default(false)
+  Core      Boolean @default(false)
+  Developer Boolean @default(false)
+  Discord   Boolean @default(false)
+  Emoji     Boolean @default(false)
+  Infos     Boolean @default(false)
+  Mute      Boolean @default(false)
+  Remind    Boolean @default(false)
+  Repeat    Boolean @default(false)
+  Sync      Boolean @default(false)
+  Teams     Boolean @default(false)
+  Who       Boolean @default(false)
+
+  Settings Settings[]
+}
+
+model EventSettings {
+  Id                     Int     @id @default(autoincrement())
+  ban                    Boolean @default(false)
+  categoryChannelCreated Boolean @default(false)
+  categoryChannelDeleted Boolean @default(false)
+  categoryChannelUpdated Boolean @default(false)
+  duplicationChecker     Boolean @default(false)
+  guildJoin              Boolean @default(false)
+  join                   Boolean @default(false)
+  kick                   Boolean @default(false)
+  mark                   Boolean @default(false)
+  messageDelete          Boolean @default(false)
+  messageUpdate          Boolean @default(false)
+  quickCommands          Boolean @default(false)
+  quote                  Boolean @default(false)
+  suggenstions_handle    Boolean @default(false)
+  textChannelCreate      Boolean @default(false)
+  textChannelDelete      Boolean @default(false)
+  textChannelUpdate      Boolean @default(false)
+  threadCreate           Boolean @default(false)
+  threadDelete           Boolean @default(false)
+  threadUpdate           Boolean @default(false)
+  userBan                Boolean @default(false)
+  userCheck              Boolean @default(false)
+  userJoined             Boolean @default(false)
+  userRemoved            Boolean @default(false)
+  userUnban              Boolean @default(false)
+
+  Settings Settings[]
+}
+
+model Infotext {
+  id   Int   @id @default(autoincrement())
+  Json Json?
 }

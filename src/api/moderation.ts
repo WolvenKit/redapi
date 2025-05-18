@@ -285,7 +285,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
           "/message",
           async ({ body, error }) => {
             try {
-              const messageCompare = await prisma.messageComparison.upsert({
+              await prisma.messageComparison.upsert({
                 where: {
                   UserId: body.UserId,
                 },

@@ -1,57 +1,53 @@
-import type { UserResolvers } from "./../../types.generated";
+import type {
+  UserResolvers,
+  NexusMods,
+  Roles,
+  Github,
+} from "./../../types.generated";
 
 export const User: UserResolvers = {
   Descryption: async (_parent, _arg, _ctx) => {
     return _parent.Description;
   },
   Github: ({ Github }, _arg, _ctx) => {
-    // Ensure the returned objects conform to the Github type (with Commits, Issues, Name, etc.)
     if (!Github) return null;
-    const normalize = (g: any) => {
-      if (typeof g === "object") {
-        return {
-          ...g,
-          Commits: g.Commits ?? [],
-          Issues: g.Issues ?? [],
-          Name: g.Name ?? g.username ?? null,
-        };
-      }
-      return {
-        username: g,
-        Commits: [],
-        Issues: [],
-        Name: g ?? null,
-      };
+
+    const isGithubObject = (gh: any): gh is Github => {
+      return typeof gh === "object" && gh !== null && !Array.isArray(gh);
     };
+
     if (Array.isArray(Github)) {
-      return Github.map(normalize);
+      const filtered = Github.filter(isGithubObject);
+      return filtered.length > 0 ? filtered : null;
     }
-    return [normalize(Github)];
+    if (isGithubObject(Github)) {
+      return [Github];
+    }
+    return null;
   },
   GlobalName: ({ GlobalName }, _arg, _ctx) => {
     return GlobalName || "";
   },
   NexusMods: ({ NexusMods }, _arg, _ctx) => {
     if (!NexusMods) return null;
+
+    const isNexusModsObject = (nm: any): nm is NexusMods => {
+      return typeof nm === "object" && nm !== null && !Array.isArray(nm);
+    };
+
     if (Array.isArray(NexusMods)) {
-      return NexusMods.filter(
-        (nm) => typeof nm === "object" && nm !== null
-      ).map((nm) => nm as any);
+      const filtered = NexusMods.filter(isNexusModsObject);
+      return filtered.length > 0 ? filtered : null;
     }
-    if (typeof NexusMods === "object" && NexusMods !== null) {
-      return [NexusMods as any];
+    if (isNexusModsObject(NexusMods)) {
+      return [NexusMods];
     }
     return null;
   },
   Roles: ({ Roles }, _arg, _ctx) => {
-    if (!Roles) return null;
-    if (Array.isArray(Roles)) {
-      return Roles.filter((role) => typeof role === "object" && role !== null);
-    }
-    if (typeof Roles === "object" && Roles !== null) {
-      return [Roles as any];
-    }
-    return null;
+    if (!Roles) return [];
+
+    return Roles as Roles[];
   },
   Username: ({ Username }, _arg, _ctx) => {
     return Username || "";

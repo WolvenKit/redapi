@@ -14,6 +14,11 @@ import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
 import { yoga } from "@elysiajs/graphql-yoga";
 import { schema, createContext } from "./graphql";
+import {
+  useJWT,
+  createInlineSigningKeyProvider,
+  extractFromHeader,
+} from "@graphql-yoga/plugin-jwt";
 
 // Check if the Database if Up and running
 try {
@@ -33,6 +38,28 @@ try {
         // @ts-ignore
         schema,
         context: createContext,
+        // plugins: [
+        //   useJWT({
+            
+        //     signingKeyProviders: [
+        //       createInlineSigningKeyProvider(process.env.JWT_SECRET!),
+        //     ],
+        //   }),
+        // ],
+        logging: {
+          debug(...args) {
+            console.log(...args);
+          },
+          info(...args) {
+            console.log(...args);
+          },
+          warn(...args) {
+            console.warn(...args);
+          },
+          error(...args) {
+            console.error(...args);
+          },
+        },
       })
     )
     .use(swagger(swaggerConfig))

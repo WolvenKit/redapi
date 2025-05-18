@@ -1,7 +1,78 @@
+type Auth {
+  DiscordId: String!
+  JWT: String!
+}
+
+type EventSetter {
+  ban: Boolean
+  categoryChannelCreated: Boolean
+  categoryChannelDeleted: Boolean
+  categoryChannelUpdated: Boolean
+  duplicationChecker: Boolean
+  guildJoin: Boolean
+  join: Boolean
+  kick: Boolean
+  mark: Boolean
+  messageDelete: Boolean
+  messageUpdate: Boolean
+  quickCommands: Boolean
+  quote: Boolean
+  suggenstions_handle: Boolean
+  textChannelCreate: Boolean
+  textChannelDelete: Boolean
+  textChannelUpdate: Boolean
+  threadCreate: Boolean
+  threadDelete: Boolean
+  threadUpdate: Boolean
+  userBan: Boolean
+  userCheck: Boolean
+  userJoined: Boolean
+  userRemoved: Boolean
+  userUnban: Boolean
+}
+
 type Github {
   Commits: Int!
   Issues: Int!
   Name: String!
+}
+
+type InteractionSetter {
+  Avatar: Boolean
+  Clean: Boolean
+  Clear: Boolean
+  Core: Boolean
+  Developer: Boolean
+  Discord: Boolean
+  Emoji: Boolean
+  Infos: Boolean
+  Mute: Boolean
+  Remind: Boolean
+  Repeat: Boolean
+  Sync: Boolean
+  Teams: Boolean
+  Who: Boolean
+}
+
+type LinkRole {
+  Id: String!
+  Name: String!
+  icon: String
+  iconUrl: String
+  position: Int!
+  rawPosition: Int!
+}
+
+type MessageComparison {
+  Duplicate: Boolean!
+}
+
+type Mutation {
+  LinkUser(Description: String, DiscordId: String!, GithubUsername: String, Image: String, Name: UserName, NameStyle: String, NexusModsUsername: String, Roles: String, Theme: String): User
+  MessageComparison(Content: String!, UserId: String!): Boolean
+  Quote(Quote: String!, Responder: String!): Quote
+  Settings(Event: EventSetter, GuildId: String!, Interaction: InteractionSetter, MarkedMembersChannel: String, MarkedMembersRole: String, ModerationCategory: String, ModerationLog: String, RestrictedQuotesChannels: String): SettingReturn
+  Warning(DiscordId: String!, Issuer: String!, Reason: String, Username: String!): [Warning]
 }
 
 type NexusMods {
@@ -36,8 +107,25 @@ type NexusModsUser {
 }
 
 type Query {
+  Info: String
+  Me: Auth!
+  QuoteById(id: Int!): Quote
+  Quotes(page: Int): [Quote]
   User(page: Int): [User!]!
-  info: String
+  UserByDiscordId(id: String!): User
+  UserByJWT(JWT: String!): User
+}
+
+type Quote {
+  Quote: String!
+  Responder: String!
+}
+
+type Register {
+  email: String!
+  id: ID!
+  name: String!
+  password: String!
 }
 
 type Roles {
@@ -46,6 +134,23 @@ type Roles {
   name: String!
   position: Int!
   rawPosition: Int!
+}
+
+type Setting {
+  GuildId: String!
+  ModifiedSetting: String!
+  Set: Boolean!
+}
+
+type SettingReturn {
+  Event: EventSetter
+  GuildId: String
+  Interaction: InteractionSetter
+  MarkedMembersChannel: String
+  MarkedMembersRole: String
+  ModerationCategory: String
+  ModerationLog: String
+  RestrictedQuotesChannels: String
 }
 
 type User {
@@ -61,5 +166,18 @@ type User {
   Roles: [Roles]
   Style: String
   Theme: String
+  Username: String!
+}
+
+type UserName {
+  GlobalName: String
+  Username: String
+}
+
+type Warning {
+  DiscordId: String!
+  IssuedTime: String
+  Issuer: String!
+  Reason: String
   Username: String!
 }

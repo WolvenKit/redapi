@@ -1,29 +1,14 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { bot, web, auth, moderation, Interface } from "api";
-import { ping, root } from "pages";
-import {
-  prisma,
-  log,
-  errorLog,
-  rateLimitConfig,
-  swaggerConfig,
-  CORSConfig,
-} from "utils";
+import { prisma, log, errorLog, rateLimitConfig, swaggerConfig, CORSConfig } from "utils";
 import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
-import { yoga } from "@elysiajs/graphql-yoga";
-import { schema, createContext } from "./graphql";
-import {
-  useJWT,
-  createInlineSigningKeyProvider,
-  extractFromHeader,
-} from "@graphql-yoga/plugin-jwt";
+import { bot, web, auth, moderation, Interface } from "api";
+import { ping, profile, root } from "pages";
 
 // Check if the Database if Up and running
 try {
-  const DBCheck: { result: number }[] =
-    await prisma.$queryRaw`SELECT 1 as result`;
+  const DBCheck: { result: number }[] = await prisma.$queryRaw`SELECT 1 as result`;
 
   if (DBCheck[0].result === 1) {
     log("Database is running");
@@ -33,46 +18,17 @@ try {
   }
 
   new Elysia()
-    .use(
-      yoga({
-        // @ts-ignore
-        schema,
-        context: createContext,
-        // plugins: [
-        //   useJWT({
-            
-        //     signingKeyProviders: [
-        //       createInlineSigningKeyProvider(process.env.JWT_SECRET!),
-        //     ],
-        //   }),
-        // ],
-        logging: {
-          debug(...args) {
-            console.log(...args);
-          },
-          info(...args) {
-            console.log(...args);
-          },
-          warn(...args) {
-            console.warn(...args);
-          },
-          error(...args) {
-            console.error(...args);
-          },
-        },
-      })
-    )
     .use(swagger(swaggerConfig))
     .use(cors(CORSConfig))
-    // .use(rateLimit(rateLimitConfig))
-    // .use(profile)
-    // .use(Interface)
-    // .use(ping)
-    // .use(bot)
-    // .use(web)
-    // .use(auth)
-    // .use(moderation)
-    // .use(root)
+    .use(rateLimit(rateLimitConfig))
+    .use(profile)
+    .use(Interface)
+    .use(ping)
+    .use(bot)
+    .use(web)
+    .use(auth)
+    .use(moderation)
+    .use(root)
     .listen({
       port: 3000,
       hostname: "localhost",

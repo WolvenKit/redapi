@@ -1,0 +1,21 @@
+-- CreateTable
+CREATE TABLE "LLM" (
+    "Id" SERIAL NOT NULL,
+    "UserId" TEXT NOT NULL,
+
+    CONSTRAINT "LLM_pkey" PRIMARY KEY ("Id")
+);
+
+-- CreateTable
+CREATE TABLE "LLMMessage" (
+    "Id" SERIAL NOT NULL,
+    "UserId" TEXT NOT NULL,
+    "Message" TEXT NOT NULL,
+    "Timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "llmId" INTEGER,
+
+    CONSTRAINT "LLMMessage_pkey" PRIMARY KEY ("Id")
+);
+
+-- AddForeignKey
+ALTER TABLE "LLMMessage" ADD CONSTRAINT "LLMMessage_llmId_fkey" FOREIGN KEY ("llmId") REFERENCES "LLM"("Id") ON DELETE SET NULL ON UPDATE CASCADE;

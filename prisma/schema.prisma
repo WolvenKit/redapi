@@ -176,3 +176,18 @@ model Infotext {
   id   Int   @id @default(autoincrement())
   Json Json?
 }
+
+model LLM {
+  Id      Int          @id @default(autoincrement())
+  UserId  String
+  Message LLMMessage[]
+}
+
+model LLMMessage {
+  Id        Int      @id @default(autoincrement())
+  UserId    String
+  Message   String
+  Timestamp DateTime @default(now())
+  LLM       LLM?     @relation(fields: [llmId], references: [Id])
+  llmId     Int?
+}

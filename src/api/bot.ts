@@ -16,9 +16,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
         "/",
         async ({ body, error }) => {
           try {
-            const NexusMods: Record<string, any> | undefined = await NexusQuery(
-              body.nexusmods
-            );
+            const NexusMods: Record<string, any> | undefined = await NexusQuery(body.nexusmods);
             const Github: any = (await GithubQuery(body.github)) ?? undefined;
 
             return await prisma.user.upsert({
@@ -185,4 +183,86 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           }),
         }
       )
+      .post(
+        "/llm/:user",
+        async ({ query, body, status }) => {
+          try {
+            const { user } = query;
+            const { message } = body;
+
+            if (!message || (Array.isArray(message) && message.length === 0)) {
+              return status(400);
+            }
+
+            await prisma.lLM.upsert({
+              where: {
+                UserId: user,
+              },
+              update: {
+                Message: {
+                  create: {
+                    UserId: user,
+                    Message: Array.isArray(message) ? message.map((m) => m.message).join("\n") : message.message,
+                    Timestamp: Array.isArray(message) ? new Date() : message.time,
+                  },
+                },
+              },
+              create: {
+                UserId: user,
+                Message: {
+                  create: {
+                    UserId: user,
+                    Message: Array.isArray(message) ? message.map((m) => m.message).join("\n") : message.message,
+                    Timestamp: Array.isArray(message) ? new Date() : message.time,
+                  },
+                },
+              },
+            });
+          } catch (e) {
+            errorLog(e);
+            return status(500);
+          }
+        },
+        {
+          query: t.Object({
+            user: t.String(),
+          }),
+          body: t.Object({
+            message:
+              t.Object({
+                message: t.String(),
+                time: t.Date(),
+              }) ||
+              t.Array(
+                t.Object({
+                  message: t.String(),
+                  time: t.Date(),
+                })
+              ),
+          }),
+        }
+      )
+      .get("/llm/:user", async ({ query, status }) => {
+        try {
+          const { user } = query;
+
+          const llmData = await prisma.lLM.findUnique({
+            where: {
+              UserId: user,
+            },
+            include: {
+              Message: true,
+            },
+          });
+
+          if (!llmData) {
+            return status(404);
+          }
+
+          return llmData;
+        } catch (e) {
+          errorLog(e);
+          return status(500);
+        }
+      })
 );

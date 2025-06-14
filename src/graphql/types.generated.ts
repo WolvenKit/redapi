@@ -8,6 +8,7 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -22,6 +23,13 @@ export type Auth = {
   __typename?: 'Auth';
   DiscordId: Scalars['String']['output'];
   JWT: Scalars['String']['output'];
+};
+
+export type Error = {
+  __typename?: 'Error';
+  code: Scalars['Int']['output'];
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
 };
 
 export type EventSetter = {
@@ -60,6 +68,51 @@ export type Github = {
   Name: Scalars['String']['output'];
 };
 
+export type InputEventSetter = {
+  ban?: InputMaybe<Scalars['Boolean']['input']>;
+  categoryChannelCreated?: InputMaybe<Scalars['Boolean']['input']>;
+  categoryChannelDeleted?: InputMaybe<Scalars['Boolean']['input']>;
+  categoryChannelUpdated?: InputMaybe<Scalars['Boolean']['input']>;
+  duplicationChecker?: InputMaybe<Scalars['Boolean']['input']>;
+  guildJoin?: InputMaybe<Scalars['Boolean']['input']>;
+  join?: InputMaybe<Scalars['Boolean']['input']>;
+  kick?: InputMaybe<Scalars['Boolean']['input']>;
+  mark?: InputMaybe<Scalars['Boolean']['input']>;
+  messageDelete?: InputMaybe<Scalars['Boolean']['input']>;
+  messageUpdate?: InputMaybe<Scalars['Boolean']['input']>;
+  quickCommands?: InputMaybe<Scalars['Boolean']['input']>;
+  quote?: InputMaybe<Scalars['Boolean']['input']>;
+  suggenstions_handle?: InputMaybe<Scalars['Boolean']['input']>;
+  textChannelCreate?: InputMaybe<Scalars['Boolean']['input']>;
+  textChannelDelete?: InputMaybe<Scalars['Boolean']['input']>;
+  textChannelUpdate?: InputMaybe<Scalars['Boolean']['input']>;
+  threadCreate?: InputMaybe<Scalars['Boolean']['input']>;
+  threadDelete?: InputMaybe<Scalars['Boolean']['input']>;
+  threadUpdate?: InputMaybe<Scalars['Boolean']['input']>;
+  userBan?: InputMaybe<Scalars['Boolean']['input']>;
+  userCheck?: InputMaybe<Scalars['Boolean']['input']>;
+  userJoined?: InputMaybe<Scalars['Boolean']['input']>;
+  userRemoved?: InputMaybe<Scalars['Boolean']['input']>;
+  userUnban?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type InputInteractionSetter = {
+  Avatar?: InputMaybe<Scalars['Boolean']['input']>;
+  Clean?: InputMaybe<Scalars['Boolean']['input']>;
+  Clear?: InputMaybe<Scalars['Boolean']['input']>;
+  Core?: InputMaybe<Scalars['Boolean']['input']>;
+  Developer?: InputMaybe<Scalars['Boolean']['input']>;
+  Discord?: InputMaybe<Scalars['Boolean']['input']>;
+  Emoji?: InputMaybe<Scalars['Boolean']['input']>;
+  Infos?: InputMaybe<Scalars['Boolean']['input']>;
+  Mute?: InputMaybe<Scalars['Boolean']['input']>;
+  Remind?: InputMaybe<Scalars['Boolean']['input']>;
+  Repeat?: InputMaybe<Scalars['Boolean']['input']>;
+  Sync?: InputMaybe<Scalars['Boolean']['input']>;
+  Teams?: InputMaybe<Scalars['Boolean']['input']>;
+  Who?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 export type InteractionSetter = {
   __typename?: 'InteractionSetter';
   Avatar?: Maybe<Scalars['Boolean']['output']>;
@@ -93,13 +146,19 @@ export type MessageComparison = {
   Duplicate: Scalars['Boolean']['output'];
 };
 
+export type MessageComparisonResponse = {
+  __typename?: 'MessageComparisonResponse';
+  Duplicate: Scalars['Boolean']['output'];
+  Status: Error;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
-  LinkUser?: Maybe<User>;
-  MessageComparison?: Maybe<Scalars['Boolean']['output']>;
+  LinkUser?: Maybe<UserResponse>;
+  MessageComparison?: Maybe<MessageComparisonResponse>;
   Quote?: Maybe<Quote>;
-  Settings?: Maybe<SettingReturn>;
-  Warning?: Maybe<Array<Maybe<Warning>>>;
+  Settings?: Maybe<SettingResponse>;
+  Warning?: Maybe<WarningResponse>;
 };
 
 
@@ -129,9 +188,9 @@ export type MutationQuoteArgs = {
 
 
 export type MutationSettingsArgs = {
-  Event?: InputMaybe<EventSetter>;
+  Event?: InputMaybe<InputEventSetter>;
   GuildId: Scalars['String']['input'];
-  Interaction?: InputMaybe<InteractionSetter>;
+  Interaction?: InputMaybe<InputInteractionSetter>;
   MarkedMembersChannel?: InputMaybe<Scalars['String']['input']>;
   MarkedMembersRole?: InputMaybe<Scalars['String']['input']>;
   ModerationCategory?: InputMaybe<Scalars['String']['input']>;
@@ -170,9 +229,9 @@ export type NexusModsMods = {
 
 export type NexusModsUser = {
   __typename?: 'NexusModsUser';
-  About: Scalars['String']['output'];
+  About?: Maybe<Scalars['String']['output']>;
   Avatar: Scalars['String']['output'];
-  Country: Scalars['String']['output'];
+  Country?: Maybe<Scalars['String']['output']>;
   Kudos: Scalars['Int']['output'];
   MemberId: Scalars['Int']['output'];
   ModCount: Scalars['Int']['output'];
@@ -221,6 +280,7 @@ export type Quote = {
   __typename?: 'Quote';
   Quote: Scalars['String']['output'];
   Responder: Scalars['String']['output'];
+  Status: Error;
 };
 
 export type Register = {
@@ -247,8 +307,8 @@ export type Setting = {
   Set: Scalars['Boolean']['output'];
 };
 
-export type SettingReturn = {
-  __typename?: 'SettingReturn';
+export type SettingResponse = {
+  __typename?: 'SettingResponse';
   Event?: Maybe<EventSetter>;
   GuildId?: Maybe<Scalars['String']['output']>;
   Interaction?: Maybe<InteractionSetter>;
@@ -257,6 +317,7 @@ export type SettingReturn = {
   ModerationCategory?: Maybe<Scalars['String']['output']>;
   ModerationLog?: Maybe<Scalars['String']['output']>;
   RestrictedQuotesChannels?: Maybe<Scalars['String']['output']>;
+  Status: Error;
 };
 
 export type User = {
@@ -277,9 +338,26 @@ export type User = {
 };
 
 export type UserName = {
-  __typename?: 'UserName';
-  GlobalName?: Maybe<Scalars['String']['output']>;
-  Username?: Maybe<Scalars['String']['output']>;
+  GlobalName?: InputMaybe<Scalars['String']['input']>;
+  Username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UserResponse = {
+  __typename?: 'UserResponse';
+  Avatar?: Maybe<Scalars['String']['output']>;
+  Descryption?: Maybe<Scalars['String']['output']>;
+  DiscordiD: Scalars['String']['output'];
+  Github?: Maybe<Array<Maybe<Github>>>;
+  GithubUsername?: Maybe<Scalars['String']['output']>;
+  GlobalId: Scalars['ID']['output'];
+  GlobalName: Scalars['String']['output'];
+  NexusMods?: Maybe<Array<Maybe<NexusMods>>>;
+  NexusModsUsername?: Maybe<Scalars['String']['output']>;
+  Roles?: Maybe<Array<Maybe<Roles>>>;
+  Status: Error;
+  Style?: Maybe<Scalars['String']['output']>;
+  Theme?: Maybe<Scalars['String']['output']>;
+  Username: Scalars['String']['output'];
 };
 
 export type Warning = {
@@ -289,6 +367,12 @@ export type Warning = {
   Issuer: Scalars['String']['output'];
   Reason?: Maybe<Scalars['String']['output']>;
   Username: Scalars['String']['output'];
+};
+
+export type WarningResponse = {
+  __typename?: 'WarningResponse';
+  Status: Error;
+  Warnings?: Maybe<Array<Maybe<Warning>>>;
 };
 
 
@@ -364,13 +448,17 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Auth: ResolverTypeWrapper<AuthMapper>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
-  EventSetter: ResolverTypeWrapper<EventSetter>;
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
-  Github: ResolverTypeWrapper<Github>;
+  Error: ResolverTypeWrapper<Error>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  EventSetter: ResolverTypeWrapper<EventSetter>;
+  Github: ResolverTypeWrapper<Github>;
+  InputEventSetter: InputEventSetter;
+  InputInteractionSetter: InputInteractionSetter;
   InteractionSetter: ResolverTypeWrapper<InteractionSetter>;
   LinkRole: ResolverTypeWrapper<LinkRole>;
   MessageComparison: ResolverTypeWrapper<MessageComparisonMapper>;
+  MessageComparisonResponse: ResolverTypeWrapper<MessageComparisonResponse>;
   Mutation: ResolverTypeWrapper<{}>;
   NexusMods: ResolverTypeWrapper<NexusMods>;
   NexusModsMods: ResolverTypeWrapper<NexusModsMods>;
@@ -381,23 +469,29 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Roles: ResolverTypeWrapper<Roles>;
   Setting: ResolverTypeWrapper<Setting>;
-  SettingReturn: ResolverTypeWrapper<SettingReturn>;
+  SettingResponse: ResolverTypeWrapper<SettingResponse>;
   User: ResolverTypeWrapper<UserMapper>;
-  UserName: ResolverTypeWrapper<UserName>;
+  UserName: UserName;
+  UserResponse: ResolverTypeWrapper<UserResponse>;
   Warning: ResolverTypeWrapper<WarningMapper>;
+  WarningResponse: ResolverTypeWrapper<Omit<WarningResponse, 'Warnings'> & { Warnings?: Maybe<Array<Maybe<ResolversTypes['Warning']>>> }>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Auth: AuthMapper;
   String: Scalars['String']['output'];
-  EventSetter: EventSetter;
-  Boolean: Scalars['Boolean']['output'];
-  Github: Github;
+  Error: Error;
   Int: Scalars['Int']['output'];
+  Boolean: Scalars['Boolean']['output'];
+  EventSetter: EventSetter;
+  Github: Github;
+  InputEventSetter: InputEventSetter;
+  InputInteractionSetter: InputInteractionSetter;
   InteractionSetter: InteractionSetter;
   LinkRole: LinkRole;
   MessageComparison: MessageComparisonMapper;
+  MessageComparisonResponse: MessageComparisonResponse;
   Mutation: {};
   NexusMods: NexusMods;
   NexusModsMods: NexusModsMods;
@@ -408,15 +502,24 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']['output'];
   Roles: Roles;
   Setting: Setting;
-  SettingReturn: SettingReturn;
+  SettingResponse: SettingResponse;
   User: UserMapper;
   UserName: UserName;
+  UserResponse: UserResponse;
   Warning: WarningMapper;
+  WarningResponse: Omit<WarningResponse, 'Warnings'> & { Warnings?: Maybe<Array<Maybe<ResolversParentTypes['Warning']>>> };
 };
 
 export type AuthResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Auth'] = ResolversParentTypes['Auth']> = {
   DiscordId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   JWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ErrorResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
+  code?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -489,12 +592,18 @@ export type MessageComparisonResolvers<ContextType = GraphQLContext, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MessageComparisonResponseResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['MessageComparisonResponse'] = ResolversParentTypes['MessageComparisonResponse']> = {
+  Duplicate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  Status?: Resolver<ResolversTypes['Error'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  LinkUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationLinkUserArgs, 'DiscordId'>>;
-  MessageComparison?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationMessageComparisonArgs, 'Content' | 'UserId'>>;
+  LinkUser?: Resolver<Maybe<ResolversTypes['UserResponse']>, ParentType, ContextType, RequireFields<MutationLinkUserArgs, 'DiscordId'>>;
+  MessageComparison?: Resolver<Maybe<ResolversTypes['MessageComparisonResponse']>, ParentType, ContextType, RequireFields<MutationMessageComparisonArgs, 'Content' | 'UserId'>>;
   Quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationQuoteArgs, 'Quote' | 'Responder'>>;
-  Settings?: Resolver<Maybe<ResolversTypes['SettingReturn']>, ParentType, ContextType, RequireFields<MutationSettingsArgs, 'GuildId'>>;
-  Warning?: Resolver<Maybe<Array<Maybe<ResolversTypes['Warning']>>>, ParentType, ContextType, RequireFields<MutationWarningArgs, 'DiscordId' | 'Issuer' | 'Username'>>;
+  Settings?: Resolver<Maybe<ResolversTypes['SettingResponse']>, ParentType, ContextType, RequireFields<MutationSettingsArgs, 'GuildId'>>;
+  Warning?: Resolver<Maybe<ResolversTypes['WarningResponse']>, ParentType, ContextType, RequireFields<MutationWarningArgs, 'DiscordId' | 'Issuer' | 'Username'>>;
 };
 
 export type NexusModsResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['NexusMods'] = ResolversParentTypes['NexusMods']> = {
@@ -519,9 +628,9 @@ export type NexusModsModsResolvers<ContextType = GraphQLContext, ParentType exte
 };
 
 export type NexusModsUserResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['NexusModsUser'] = ResolversParentTypes['NexusModsUser']> = {
-  About?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  About?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   Avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  Country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  Country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   Kudos?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   MemberId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ModCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -544,6 +653,7 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
 export type QuoteResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Quote'] = ResolversParentTypes['Quote']> = {
   Quote?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   Responder?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  Status?: Resolver<ResolversTypes['Error'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -571,7 +681,7 @@ export type SettingResolvers<ContextType = GraphQLContext, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type SettingReturnResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SettingReturn'] = ResolversParentTypes['SettingReturn']> = {
+export type SettingResponseResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SettingResponse'] = ResolversParentTypes['SettingResponse']> = {
   Event?: Resolver<Maybe<ResolversTypes['EventSetter']>, ParentType, ContextType>;
   GuildId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   Interaction?: Resolver<Maybe<ResolversTypes['InteractionSetter']>, ParentType, ContextType>;
@@ -580,6 +690,7 @@ export type SettingReturnResolvers<ContextType = GraphQLContext, ParentType exte
   ModerationCategory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ModerationLog?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   RestrictedQuotesChannels?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  Status?: Resolver<ResolversTypes['Error'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -600,9 +711,21 @@ export type UserResolvers<ContextType = GraphQLContext, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserNameResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['UserName'] = ResolversParentTypes['UserName']> = {
-  GlobalName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  Username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type UserResponseResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['UserResponse'] = ResolversParentTypes['UserResponse']> = {
+  Avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  Descryption?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  DiscordiD?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  Github?: Resolver<Maybe<Array<Maybe<ResolversTypes['Github']>>>, ParentType, ContextType>;
+  GithubUsername?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  GlobalId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  GlobalName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  NexusMods?: Resolver<Maybe<Array<Maybe<ResolversTypes['NexusMods']>>>, ParentType, ContextType>;
+  NexusModsUsername?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  Roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Roles']>>>, ParentType, ContextType>;
+  Status?: Resolver<ResolversTypes['Error'], ParentType, ContextType>;
+  Style?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  Theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  Username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -615,13 +738,21 @@ export type WarningResolvers<ContextType = GraphQLContext, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type WarningResponseResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['WarningResponse'] = ResolversParentTypes['WarningResponse']> = {
+  Status?: Resolver<ResolversTypes['Error'], ParentType, ContextType>;
+  Warnings?: Resolver<Maybe<Array<Maybe<ResolversTypes['Warning']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = GraphQLContext> = {
   Auth?: AuthResolvers<ContextType>;
+  Error?: ErrorResolvers<ContextType>;
   EventSetter?: EventSetterResolvers<ContextType>;
   Github?: GithubResolvers<ContextType>;
   InteractionSetter?: InteractionSetterResolvers<ContextType>;
   LinkRole?: LinkRoleResolvers<ContextType>;
   MessageComparison?: MessageComparisonResolvers<ContextType>;
+  MessageComparisonResponse?: MessageComparisonResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   NexusMods?: NexusModsResolvers<ContextType>;
   NexusModsMods?: NexusModsModsResolvers<ContextType>;
@@ -631,9 +762,10 @@ export type Resolvers<ContextType = GraphQLContext> = {
   Register?: RegisterResolvers<ContextType>;
   Roles?: RolesResolvers<ContextType>;
   Setting?: SettingResolvers<ContextType>;
-  SettingReturn?: SettingReturnResolvers<ContextType>;
+  SettingResponse?: SettingResponseResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
-  UserName?: UserNameResolvers<ContextType>;
+  UserResponse?: UserResponseResolvers<ContextType>;
   Warning?: WarningResolvers<ContextType>;
+  WarningResponse?: WarningResponseResolvers<ContextType>;
 };
 

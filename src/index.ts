@@ -2,103 +2,45 @@ import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
 import { bot, web, auth, moderation, Interface } from "api";
 import { ping, root } from "pages";
-import {
-  prisma,
-  log,
-  errorLog,
-  rateLimitConfig,
-  swaggerConfig,
-  CORSConfig,
-} from "utils";
+import { prisma, log, errorLog, swaggerConfig, CORSConfig } from "utils";
 import { cors } from "@elysiajs/cors";
-import { rateLimit } from "elysia-rate-limit";
 import { yoga } from "@elysiajs/graphql-yoga";
 import { schema, createContext } from "./graphql";
-import {
-  useJWT,
-  createInlineSigningKeyProvider,
-  extractFromHeader,
-} from "@graphql-yoga/plugin-jwt";
 
-// Check if the Database if Up and running
 try {
-  const DBCheck: { result: number }[] =
-    await prisma.$queryRaw`SELECT 1 as result`;
+  await prisma.$connect();
+  log("Database is connected");
+} catch (error) {
+  errorLog("Database is not connected");
+  process.exit(1);
+}
 
-  if (DBCheck[0].result === 1) {
-    log("Database is running");
-  } else {
-    errorLog("Database is not running");
-    process.exit(1);
-  }
-
+try {
   new Elysia()
     .use(
       yoga({
         // @ts-ignore
         schema,
         context: createContext,
-        // plugins: [
-        //   useJWT({
-            
-        //     signingKeyProviders: [
-        //       createInlineSigningKeyProvider(process.env.JWT_SECRET!),
-        //     ],
-        //   }),
-        // ],
-        logging: {
-          debug(...args) {
-            console.log(...args);
-          },
-          info(...args) {
-            console.log(...args);
-          },
-          warn(...args) {
-            console.warn(...args);
-          },
-          error(...args) {
-            console.error(...args);
-          },
-        },
       })
     )
     .use(swagger(swaggerConfig))
     .use(cors(CORSConfig))
-    // .use(rateLimit(rateLimitConfig))
-    // .use(profile)
-    // .use(Interface)
-    // .use(ping)
-    // .use(bot)
-    // .use(web)
-    // .use(auth)
-    // .use(moderation)
-    // .use(root)
+    .use(Interface)
+    .use(ping)
+    .use(bot)
+    .use(web)
+    .use(auth)
+    .use(moderation)
+    .use(root)
     .listen({
-      port: 3000,
+      port: 8080,
       hostname: "localhost",
     })
-    // .listen({
-    //   port: 4443,
-    //   tls: {
-    //     key: Bun.file(join(import.meta.dir, `./certs/${process.env.SSL_KEY}`)),
-    //     cert: Bun.file(
-    //       join(import.meta.dir, `./certs/${process.env.SSL_CERT}`)
-    //     ),
-    //   },
-    //   hostname: process.env.HOSTNAME,
-    // })
-    // .listen({
-    //   port: 8080,
-    //   hostname: process.env.HOSTNAME,
-    // })
     .onRequest(({ request }) => {
       const { method, url } = request;
       log(`${method} ${url}`);
     });
-  // .onError(({ error }) => {
-  //   errorLog(error);
-  //   return "An error occurred";
-  // });
 } catch (error) {
   errorLog(error);
 }

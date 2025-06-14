@@ -1,4 +1,5 @@
 import type { MutationResolvers } from "./../../../types.generated";
+
 export const MessageComparison: NonNullable<MutationResolvers['MessageComparison']> = async (_parent, _arg, _ctx) => {
   await _ctx.prisma.messageComparison.upsert({
     where: {

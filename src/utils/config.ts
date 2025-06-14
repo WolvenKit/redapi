@@ -10,6 +10,16 @@ export const swaggerConfig = {
 export const rateLimitConfig = {
   duration: 60,
   max: 110,
+  skip: (req: Request, key?: string) => {
+    console.log(req)
+    console.log(key)
+
+    const { url } = req;
+    if (url === "/graphql") {
+      return false; // Skip rate limiting for this endpoint
+    }
+    return true; // Apply rate limiting for all other requests
+  },
 };
 
 export const CORSConfig = {

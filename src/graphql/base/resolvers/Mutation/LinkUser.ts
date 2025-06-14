@@ -1,5 +1,4 @@
 import type { MutationResolvers } from "./../../../types.generated";
-import type { JsonValue } from "type-fest";
 
 export const LinkUser: NonNullable<MutationResolvers['LinkUser']> = async (
   _parent,

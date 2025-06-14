@@ -1,7 +1,6 @@
 import { PrismaClient, Auth } from "@prisma/client";
 import { authenticateUser } from "./graphql/auth";
 import { YogaInitialContext } from "graphql-yoga";
-import type { JsonValue } from "type-fest";
 
 const prisma = new PrismaClient();
 

@@ -14,6 +14,23 @@ type User {
   Roles: [Roles]
 }
 
+type UserResponse {
+  Status: Error!
+  GlobalId: ID!
+  Username: String!
+  GlobalName: String!
+  Avatar: String
+  DiscordiD: String!
+  Theme: String
+  Style: String
+  Descryption: String
+  GithubUsername: String
+  NexusModsUsername: String
+  NexusMods: [NexusMods]
+  Github: [Github]
+  Roles: [Roles]
+}
+
 type Github {
   Name: String!
   Issues: Int!
@@ -44,11 +61,11 @@ type NexusModsMods {
 
 type NexusModsUser {
   Name: String!
-  About: String!
+  About: String
   Kudos: Int!
   Posts: Int!
   Avatar: String!
-  Country: String!
+  Country: String
   MemberId: Int!
   ModCount: Int!
   UniqueModDownloads: Int!
@@ -72,21 +89,12 @@ type Auth {
 }
 
 type Quote {
+  Status: Error!
   Quote: String!
   Responder: String!
 }
 
-type Query {
-  Info: String
-  User(page: Int): [User!]!
-  Me: Auth!
-  UserByJWT(JWT: String!): User
-  UserByDiscordId(id: String!): User
-  Quotes(page: Int): [Quote]
-  QuoteById(id: Int!): Quote
-}
-
-type UserName {
+input UserName {
   Username: String
   GlobalName: String
 }
@@ -98,6 +106,51 @@ type LinkRole {
   rawPosition: Int!
   icon: String
   iconUrl: String
+}
+
+input InputEventSetter {
+  ban: Boolean
+  categoryChannelCreated: Boolean
+  categoryChannelDeleted: Boolean
+  categoryChannelUpdated: Boolean
+  duplicationChecker: Boolean
+  guildJoin: Boolean
+  join: Boolean
+  kick: Boolean
+  mark: Boolean
+  messageDelete: Boolean
+  messageUpdate: Boolean
+  quickCommands: Boolean
+  quote: Boolean
+  suggenstions_handle: Boolean
+  textChannelCreate: Boolean
+  textChannelDelete: Boolean
+  textChannelUpdate: Boolean
+  threadCreate: Boolean
+  threadDelete: Boolean
+  threadUpdate: Boolean
+  userBan: Boolean
+  userCheck: Boolean
+  userJoined: Boolean
+  userRemoved: Boolean
+  userUnban: Boolean
+}
+
+input InputInteractionSetter {
+  Avatar: Boolean
+  Clean: Boolean
+  Clear: Boolean
+  Core: Boolean
+  Developer: Boolean
+  Discord: Boolean
+  Emoji: Boolean
+  Infos: Boolean
+  Mute: Boolean
+  Remind: Boolean
+  Repeat: Boolean
+  Sync: Boolean
+  Teams: Boolean
+  Who: Boolean
 }
 
 type EventSetter {
@@ -155,7 +208,8 @@ type MessageComparison {
   Duplicate: Boolean!
 }
 
-type SettingReturn {
+type SettingResponse {
+  Status: Error!
   GuildId: String
   RestrictedQuotesChannels: String
   MarkedMembersChannel: String
@@ -174,6 +228,22 @@ type Warning {
   IssuedTime: String
 }
 
+type WarningResponse {
+  Status: Error!
+  Warnings: [Warning]
+}
+
+type Error {
+  code: Int!
+  success: Boolean!
+  message: String!
+}
+
+type MessageComparisonResponse {
+  Status: Error!
+  Duplicate: Boolean!
+}
+
 type Mutation {
   LinkUser(
     DiscordId: String!
@@ -185,17 +255,12 @@ type Mutation {
     Description: String
     NameStyle: String
     Roles: String
-  ): User
+  ): UserResponse
 
-  Warning(
-    DiscordId: String!
-    Username: String!
-    Reason: String
-    Issuer: String!
-  ): [Warning]
+  Warning(DiscordId: String!, Username: String!, Reason: String, Issuer: String!): WarningResponse
 
   Quote(Quote: String!, Responder: String!): Quote
-  MessageComparison(Content: String!, UserId: String!): Boolean
+  MessageComparison(Content: String!, UserId: String!): MessageComparisonResponse
   Settings(
     GuildId: String!
     RestrictedQuotesChannels: String
@@ -203,7 +268,17 @@ type Mutation {
     ModerationCategory: String
     ModerationLog: String
     MarkedMembersRole: String
-    Event: EventSetter
-    Interaction: InteractionSetter
-  ): SettingReturn
+    Event: InputEventSetter
+    Interaction: InputInteractionSetter
+  ): SettingResponse
+}
+
+type Query {
+  Info: String
+  User(page: Int): [User!]!
+  Me: Auth!
+  UserByJWT(JWT: String!): User
+  UserByDiscordId(id: String!): User
+  Quotes(page: Int): [Quote]
+  QuoteById(id: Int!): Quote
 }

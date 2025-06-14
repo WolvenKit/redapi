@@ -179,7 +179,7 @@ model Infotext {
 
 model LLM {
   Id      Int          @id @default(autoincrement())
-  UserId  String
+  UserId  String       @unique
   Message LLMMessage[]
 }
 

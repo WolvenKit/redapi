@@ -1,22 +1,12 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { prisma, log, errorLog, rateLimitConfig, swaggerConfig, CORSConfig } from "utils";
+import { log, errorLog, rateLimitConfig, swaggerConfig, CORSConfig } from "utils";
 import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
 import { bot, web, auth, moderation, Interface } from "api";
 import { ping, profile, root } from "pages";
 
-// Check if the Database if Up and running
 try {
-  const DBCheck: { result: number }[] = await prisma.$queryRaw`SELECT 1 as result`;
-
-  if (DBCheck[0].result === 1) {
-    log("Database is running");
-  } else {
-    errorLog("Database is not running");
-    process.exit(1);
-  }
-
   new Elysia()
     .use(swagger(swaggerConfig))
     .use(cors(CORSConfig))
@@ -51,10 +41,6 @@ try {
       const { method, url } = request;
       log(`${method} ${url}`);
     });
-  // .onError(({ error }) => {
-  //   errorLog(error);
-  //   return "An error occurred";
-  // });
 } catch (error) {
   errorLog(error);
 }

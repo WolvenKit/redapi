@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, status, t } from "elysia";
 import { prisma } from "../utils/prisma";
 import { errorLog } from "../utils";
 import { bearer } from "@elysiajs/bearer";
@@ -12,15 +12,15 @@ export const moderation = new Elysia({ prefix: "/moderation" })
   .use(bearer())
   .guard(
     {
-      beforeHandle({ set, bearer, error, path }) {
-        return ValidateAuth(set, bearer, error, path, "moderation");
+      beforeHandle({ set, bearer, status, path }) {
+        return ValidateAuth(set, bearer, status, path, "moderation");
       },
     },
     (app) =>
       app
         .post(
           "/ban",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               const moderation = await prisma.moderation.findUnique({
                 where: { DiscordId: body.DiscordId },
@@ -70,7 +70,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               return [body, newWarningLevel];
             } catch (e) {
               errorLog(e);
-              return error(500);
+              return status(500);
             }
           },
           {
@@ -86,7 +86,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/warn",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               const moderation = await prisma.moderation.findUnique({
                 where: { DiscordId: body.DiscordId },
@@ -143,7 +143,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               return [body, newWarningLevel];
             } catch (e) {
               errorLog(e);
-              return error(500);
+              return status(500);
             }
           },
           {
@@ -158,7 +158,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/kick",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               await prisma.kick.create({
                 data: {
@@ -211,7 +211,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               return [body, newWarningLevel];
             } catch (e) {
               errorLog(e);
-              return error(500);
+              return status(500);
             }
           },
           {
@@ -227,7 +227,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/drop",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               // Drop all Moderation data for a user
 
@@ -237,8 +237,8 @@ export const moderation = new Elysia({ prefix: "/moderation" })
                     DiscordId: body.DiscordId,
                   },
                 })
-                .catch((error) => {
-                  return error;
+                .catch((status) => {
+                  return status;
                 });
 
               // Drop all Kicks for a user
@@ -249,8 +249,8 @@ export const moderation = new Elysia({ prefix: "/moderation" })
                     DiscordId: body.DiscordId,
                   },
                 })
-                .catch((error) => {
-                  return error;
+                .catch((status) => {
+                  return status;
                 });
 
               // Drop all Bans for a user
@@ -261,8 +261,8 @@ export const moderation = new Elysia({ prefix: "/moderation" })
                     DiscordId: body.DiscordId,
                   },
                 })
-                .catch((error) => {
-                  return error;
+                .catch((status) => {
+                  return status;
                 });
 
               if (!moderation || !kicks || !bans) {
@@ -272,7 +272,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               return [body, moderation, kicks, bans];
             } catch (e) {
               errorLog(e);
-              return error(500);
+              return status(500);
             }
           },
           {
@@ -283,7 +283,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
         )
         .post(
           "/message",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               await prisma.messageComparison.upsert({
                 where: {
@@ -348,7 +348,7 @@ export const moderation = new Elysia({ prefix: "/moderation" })
               return false;
             } catch (e) {
               errorLog(e);
-              return error(500);
+              return status(500);
             }
           },
           {

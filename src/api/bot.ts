@@ -6,15 +6,15 @@ import { ValidateAuth } from "src/middleware/auth";
 
 export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
   {
-    beforeHandle({ set, bearer, error, path }) {
-      return ValidateAuth(set, bearer, error, path, "bot");
+    beforeHandle({ set, bearer, status, path }) {
+      return ValidateAuth(set, bearer, status, path, "bot");
     },
   },
   (app) =>
     app
       .post(
         "/",
-        async ({ body, error }) => {
+        async ({ body, status }) => {
           try {
             const NexusMods: Record<string, any> | undefined = await NexusQuery(
               body.nexusmods
@@ -54,7 +54,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
             });
           } catch (e) {
             errorLog(e);
-            return error(500);
+            return status(500);
           }
         },
         {
@@ -75,11 +75,11 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
       )
       .post(
         "/commands",
-        async ({ body, error }) => {
+        async ({ body, status }) => {
           try {
           } catch (e) {
             errorLog(e);
-            return error(500);
+            return status(500);
           }
         },
         {
@@ -91,7 +91,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
       )
       .post(
         "/quotes",
-        async ({ body, error }) => {
+        async ({ body, status }) => {
           try {
             return await prisma.quotes.create({
               data: {
@@ -101,7 +101,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
             });
           } catch (e) {
             errorLog(e);
-            return error(500);
+            return status(500);
           }
         },
         {
@@ -113,7 +113,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
       )
       .get(
         "/quotes/request",
-        async ({ query, error }) => {
+        async ({ query, status }) => {
           try {
             const User = query.user;
 
@@ -138,7 +138,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
             });
           } catch (e) {
             errorLog(e);
-            return error(500);
+            return status(500);
           }
         },
         {
@@ -147,17 +147,17 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
           }),
         }
       )
-      .get("/coreversions", async ({ error }) => {
+      .get("/coreversions", async ({ status }) => {
         try {
           return await Updater();
         } catch (e) {
           errorLog(e);
-          return error(500);
+          return status(500);
         }
       })
       .patch(
         "/quotes/:quoteId",
-        async ({ query, body, error }) => {
+        async ({ query, body, status }) => {
           try {
             const quote = await prisma.quotes.update({
               where: {
@@ -172,7 +172,7 @@ export const bot = new Elysia({ prefix: "/bot" }).use(bearer()).guard(
             return quote;
           } catch (e) {
             errorLog(e);
-            return error(500);
+            return status(500);
           }
         },
         {

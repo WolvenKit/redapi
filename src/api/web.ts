@@ -3,7 +3,7 @@ import { prisma } from "../utils";
 import { errorLog } from "../utils";
 
 export const web = new Elysia({ prefix: "/web" })
-  .get("/", async ({ error }) => {
+  .get("/", async ({ status }) => {
     try {
       return await prisma.user.findMany({
         orderBy: {
@@ -12,12 +12,12 @@ export const web = new Elysia({ prefix: "/web" })
       });
     } catch (e) {
       errorLog(e);
-      return error(500);
+      return status(500);
     }
   })
   .get(
     "/user/:userId",
-    async ({ params, error }) => {
+    async ({ params, status }) => {
       try {
         const User = await prisma.user.findUnique({
           where: {
@@ -27,7 +27,7 @@ export const web = new Elysia({ prefix: "/web" })
         return User;
       } catch (e) {
         errorLog(e);
-        return error(500);
+        return status(500);
       }
     },
     {
@@ -38,7 +38,7 @@ export const web = new Elysia({ prefix: "/web" })
   )
   .get(
     "/moderation/bans",
-    async ({ query, error }) => {
+    async ({ query, status }) => {
       try {
         return await prisma.bans.findMany({
           take: 10,
@@ -49,7 +49,7 @@ export const web = new Elysia({ prefix: "/web" })
         });
       } catch (e) {
         errorLog(e);
-        return error(500);
+        return status(500);
       }
     },
     {
@@ -60,7 +60,7 @@ export const web = new Elysia({ prefix: "/web" })
   )
   .get(
     "/moderation/kicks",
-    async ({ query, error }) => {
+    async ({ query, status }) => {
       try {
         return await prisma.kick.findMany({
           take: 10,
@@ -71,7 +71,7 @@ export const web = new Elysia({ prefix: "/web" })
         });
       } catch (e) {
         errorLog(e);
-        return error(500);
+        return status(500);
       }
     },
     {
@@ -82,10 +82,10 @@ export const web = new Elysia({ prefix: "/web" })
   )
   .get(
     "/moderation/:userId",
-    async ({ params, cookie: { auth }, error }) => {
+    async ({ params, cookie: { auth }, status }) => {
       try {
         if (!auth.value) {
-          return error(401);
+          return status(401);
         }
 
         const user = await prisma.moderation.findUnique({
@@ -99,10 +99,10 @@ export const web = new Elysia({ prefix: "/web" })
           },
         });
 
-        return user ?? error(401);
+        return user ?? status(401);
       } catch (e) {
         errorLog(e);
-        return error(500);
+        return status(500);
       }
     },
     {

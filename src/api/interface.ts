@@ -9,17 +9,17 @@ export const Interface = new Elysia({ prefix: "/interface" })
   .use(bearer())
   .guard(
     {
-      beforeHandle({ set, bearer, error, path }) {
-        return ValidateAuth(set, bearer, error, path, "interface");
+      beforeHandle({ set, bearer, status, path }) {
+        return ValidateAuth(set, bearer, status, path, "interface");
       },
     },
     (app) =>
       app
-        .patch("/update/users", async ({ error }) => {
+        .patch("/update/users", async ({ status }) => {
           try {
             const allUsers = await prisma.user.findMany();
 
-            if (!allUsers) return error;
+            if (!allUsers) return status;
 
             allUsers.map(async (user) => {
               const DiscordUser = (await DClient.guilds.cache
@@ -70,12 +70,12 @@ export const Interface = new Elysia({ prefix: "/interface" })
             });
           } catch (e) {
             errorLog(e);
-            return error;
+            return status;
           }
         })
         .post(
           "/import/users",
-          async ({ body, error }) => {
+          async ({ body, status }) => {
             try {
               const NexusMods: Record<string, any> | undefined =
                 await NexusQuery(body.NexusModsUsername);
@@ -136,7 +136,7 @@ export const Interface = new Elysia({ prefix: "/interface" })
               });
             } catch (e) {
               errorLog(e);
-              return error;
+              return status;
             }
           },
           {
@@ -153,7 +153,7 @@ export const Interface = new Elysia({ prefix: "/interface" })
             }),
           }
         )
-        .get("/quotes", async ({ error }) => {
+        .get("/quotes", async ({ status }) => {
           try {
             return await prisma.quotes.findMany({
               orderBy: {
@@ -162,10 +162,10 @@ export const Interface = new Elysia({ prefix: "/interface" })
             });
           } catch (e) {
             errorLog(e);
-            return error;
+            return status;
           }
         })
-         .patch("/quotes:id", async ({ error }) => {
+         .patch("/quotes:id", async ({ status }) => {
           try {
             return await prisma.quotes.findMany({
               orderBy: {
@@ -174,7 +174,7 @@ export const Interface = new Elysia({ prefix: "/interface" })
             });
           } catch (e) {
             errorLog(e);
-            return error;
+            return status;
           }
         })
   );

@@ -9,7 +9,7 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
     secret: process.env.JWT_SECRET!,
   }).get(
     "/redirect",
-    async ({ jwt, query, cookie: { discord, auth }, redirect, error }) => {
+    async ({ jwt, query, cookie: { discord, auth }, redirect, status }) => {
       try {
         const Token = (await fetch("https://discord.com/api/oauth2/token", {
           method: "POST",
@@ -50,18 +50,12 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
             },
             update: {
               JWT: JWT,
-              Endpoints:
-                DiscordUser.id === process.env.ADMIN_ID!
-                  ? AdminPermission
-                  : defaultPermission,
+              Endpoints: DiscordUser.id === process.env.ADMIN_ID! ? AdminPermission : defaultPermission,
             },
             create: {
               DiscordId: DiscordUser.id,
               JWT: JWT,
-              Endpoints:
-                DiscordUser.id === process.env.ADMIN_ID!
-                  ? AdminPermission
-                  : defaultPermission,
+              Endpoints: DiscordUser.id === process.env.ADMIN_ID! ? AdminPermission : defaultPermission,
             },
           }),
           prisma.moderation.upsert({
@@ -89,7 +83,7 @@ export const auth = new Elysia({ prefix: "/auth" }).use(
         return redirect(process.env.REDIRECT!);
       } catch (e) {
         errorLog(e);
-        return error(500);
+        return status(500);
       }
     },
     {
